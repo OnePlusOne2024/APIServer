@@ -1,4 +1,4 @@
-package org.spring.oneplusone.config;
+package org.spring.oneplusone.Config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;

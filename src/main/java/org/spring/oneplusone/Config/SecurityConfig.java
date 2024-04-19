@@ -1,4 +1,4 @@
-package org.spring.oneplusone.config;
+package org.spring.oneplusone.Config;
 
 
 import org.springframework.context.annotation.Bean;
@@ -17,7 +17,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .securityMatchers((matchers) -> matchers
-                        .requestMatchers("/api/**")
+                        .requestMatchers("/api/**,/api/v1/product/readAll")
                 )
                 .authorizeHttpRequests((authorize) -> authorize
                         .anyRequest().hasRole("USER")
