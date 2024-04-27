@@ -40,25 +40,21 @@ public class ProductService {
                 .build();
     }
 
-    public CrawlingResultDTO productCrawling(){
+    public CrawlingResultDTO productCrawling() throws Exception {
         //crawling시도 후 성공 메시지와 함께 크롤링 된 상품 갯수 알려줌
         //전체 리스트 객체 생성
         List<ProductDTO> result;
         //GS크롤링 Object 생성
-        try{
-            GsCrawling crawlingGS = new GsCrawling();
-            crawlingGS.getEventProduct();
-        } catch(error){
-
-        }
+        //나중에 spring bean으로 수정 , 지금은 그냥 새로운 객체로
+        GsCrawling gsCrawling = new GsCrawling();
+        gsCrawling.getEventProduct();
         //SEVENELEVEN크롤링
 
         //crawling후에 DB에 등록
         //결과 return
-        CrawlingResultDTO crawlingResult = CrawlingResultDTO.builder()
-                .success(Boolean.TRUE)
-                .resultCount(result.size())
-                .build();
-
+        //나중에 spring bean에서 가져오는 걸로 수정
+//        CrawlingResultDTO crawlingResult = new CrawlingResultDTO(true, result.size());
+//        return crawlingResult;
+        return null;
     }
 }

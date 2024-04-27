@@ -16,6 +16,8 @@ import java.io.IOException;
 @RestControllerAdvice
 //Spring 예외를 미리 처리해둔 추상 클래스를 상속 받음
 public class GlobalErrorHandler extends ResponseEntityExceptionHandler {
+
+
     @ExceptionHandler({Exception.class})
     protected ResponseEntity handleServerException(Exception ex){
         return new ResponseEntity(

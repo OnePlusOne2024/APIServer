@@ -13,8 +13,8 @@ public class GsCrawling implements Crawling{
 
     public List<ProductDTO> getEventProduct() {
         //enum에 선언된 url을 통해 크롤링 시도
-
         WebDriver driver = startingSession(URL.GSEVENTURL.getUrl());
+        driver.getTitle();
         return null;
     }
 }

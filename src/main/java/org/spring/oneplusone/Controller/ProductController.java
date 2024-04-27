@@ -30,9 +30,10 @@ public class ProductController {
     }
 
     @PostMapping("/crawling")
-    public ResponseEntity<?> crawlingAllProduct() {
+    public ResponseEntity<?> crawlingAllProduct() throws Exception{
         //crawling시도 후 성공하면 성공 메시지 에러 발생하면 에러 메시지
-        CrwalingResultDTO result = productService.productCrawling();
+        CrawlingResultDTO result = productService.productCrawling();
 
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 }
