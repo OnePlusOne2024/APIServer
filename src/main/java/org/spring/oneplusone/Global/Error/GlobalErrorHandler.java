@@ -20,6 +20,7 @@ public class GlobalErrorHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({Exception.class})
     protected ResponseEntity handleServerException(Exception ex){
+        System.out.println(ex);
         return new ResponseEntity(
                 new ErrorDTO(ErrorList.GSEVENT.getErrmsg())//새로운 객체를 통해서 DTO에 Errormsg 넣기(생성자를 통해서)
                     , HttpStatus.INTERNAL_SERVER_ERROR
