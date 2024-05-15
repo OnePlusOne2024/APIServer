@@ -1,11 +1,8 @@
-package org.spring.Utils.Response;
+package org.spring.oneplusone.Utils.Response;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.spring.DTO.CrawlingResultDTO;
-import org.spring.DTO.ProductDTO;
-
-import java.util.List;
+import org.spring.oneplusone.DTO.CrawlingResultDTO;
 
 @Getter
 @Setter

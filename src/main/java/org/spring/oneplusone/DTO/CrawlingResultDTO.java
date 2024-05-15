@@ -1,4 +1,4 @@
-package org.spring.DTO;
+package org.spring.oneplusone.DTO;
 
 
 import lombok.*;

@@ -1,14 +1,14 @@
-package org.spring.Utils.Error;
+package org.spring.oneplusone.Utils.Error;
 
-import org.spring.DTO.ErrorDTO;
-import org.spring.Utils.Enums.ErrorList;
+import org.spring.oneplusone.DTO.ErrorDTO;
+import org.spring.oneplusone.Utils.Enums.ErrorList;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 //나중에 커스텀 할때 사용
-// import org.spring.Utils.Enums.ErrorList;
+// import org.spring.oneplusone.Enums.Utils.ErrorList;
 
 //basePackages옵션을 사용하면 특정 클래스만 제한적으로 적용 가능
 @RestControllerAdvice

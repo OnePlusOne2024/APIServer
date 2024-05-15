@@ -1,8 +1,8 @@
 package org.spring.oneplusone.Service;
 
 
-import org.spring.DTO.CrawlingResultDTO;
-import org.spring.DTO.ProductDTO;
+import org.spring.oneplusone.DTO.CrawlingResultDTO;
+import org.spring.oneplusone.DTO.ProductDTO;
 import org.spring.oneplusone.Entity.ProductEntity;
 import org.spring.oneplusone.Entity.ProductId;
 import org.spring.oneplusone.Repository.ProductRepository;

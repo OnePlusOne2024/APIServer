@@ -5,9 +5,9 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
-import org.spring.DTO.ProductDTO;
-import org.spring.Utils.Enums.ConvName;
-import org.spring.Utils.Enums.URL;
+import org.spring.oneplusone.DTO.ProductDTO;
+import org.spring.oneplusone.Utils.Enums.ConvName;
+import org.spring.oneplusone.Utils.Enums.URL;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;

@@ -5,7 +5,7 @@ import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Getter;
-import org.spring.Utils.Enums.ConvName;
+import org.spring.oneplusone.Utils.Enums.ConvName;
 
 import java.io.Serializable;
 

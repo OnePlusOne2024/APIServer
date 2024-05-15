@@ -5,10 +5,10 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.spring.Utils.Response.ProductCrawlingAllResponse;
-import org.spring.Utils.Response.ProductReadAllResponse;
-import org.spring.DTO.ProductDTO;
-import org.spring.DTO.CrawlingResultDTO;
+import org.spring.oneplusone.Utils.Response.ProductCrawlingAllResponse;
+import org.spring.oneplusone.Utils.Response.ProductReadAllResponse;
+import org.spring.oneplusone.DTO.ProductDTO;
+import org.spring.oneplusone.DTO.CrawlingResultDTO;
 
 import org.spring.oneplusone.Service.ProductService;
 import org.springframework.http.HttpStatus;

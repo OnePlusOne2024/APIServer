@@ -1,8 +1,8 @@
-package org.spring.Utils.Response;
+package org.spring.oneplusone.Utils.Response;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.spring.DTO.ProductDTO;
+import org.spring.oneplusone.DTO.ProductDTO;
 
 import java.util.List;
 

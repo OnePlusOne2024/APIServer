@@ -1,4 +1,4 @@
-package org.spring.Utils.Enums;
+package org.spring.oneplusone.Utils.Enums;
 
 import lombok.Getter;
 
