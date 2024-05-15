@@ -5,7 +5,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.spring.oneplusone.Global.Enums.ConvName;
 
 
 @Entity

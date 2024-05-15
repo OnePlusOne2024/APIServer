@@ -4,9 +4,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import lombok.Builder;
 import lombok.Getter;
-import org.spring.oneplusone.Global.Enums.ConvName;
+import org.spring.Utils.Enums.ConvName;
 
 import java.io.Serializable;
 

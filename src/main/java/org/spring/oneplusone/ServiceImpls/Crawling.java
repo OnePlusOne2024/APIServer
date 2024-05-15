@@ -4,9 +4,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.spring.oneplusone.DTO.ProductDTO;
-
-import java.util.List;
 
 //Crawling interface 정의
 public interface Crawling {
@@ -27,10 +24,10 @@ public interface Crawling {
 //                .usingDriverExecutable(driverpath) 추후에 driver경로를 설정 하고 싶을 때 사용
                 .build();
         //해당 객체를 변수로 가지는 ChromerDriver객체 생성
-        WebDriver driver = new ChromeDriver(service);
+        WebDriver driver = new ChromeDriver(service, options);
         driver.get(webStiePath);
         //가져오는 거 성공했다는 로그 남기기
-        System.out.println(driver.getTitle());
+//        System.out.println(driver.getTitle());
         return driver;
     }
     //정확한 부분을 크롤링 해오는 추상 method

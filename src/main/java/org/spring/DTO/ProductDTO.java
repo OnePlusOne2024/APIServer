@@ -1,9 +1,9 @@
-package org.spring.oneplusone.DTO;
+package org.spring.DTO;
 
 
 import lombok.Builder;
 import lombok.Getter;
-import org.spring.oneplusone.Global.Enums.ConvName;
+import org.spring.Utils.Enums.ConvName;
 //import lombok.NoArgsConstructor;
 //import lombok.AccessLevel;
 
