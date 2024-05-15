@@ -9,5 +9,5 @@ import java.util.List;
 
 
 public interface ProductRepository extends JpaRepository<ProductEntity, ProductId> {
-    List<ProductEntity> findByPid(ProductId pid);
+
 }

@@ -4,6 +4,7 @@ package org.spring.oneplusone.Service;
 import org.spring.oneplusone.DTO.CrawlingResultDTO;
 import org.spring.oneplusone.DTO.ProductDTO;
 import org.spring.oneplusone.Entity.ProductEntity;
+import org.spring.oneplusone.Entity.ProductId;
 import org.spring.oneplusone.Repository.ProductRepository;
 import org.spring.oneplusone.ServiceImpls.GsCrawling;
 import org.springframework.stereotype.Service;
@@ -13,22 +14,48 @@ import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
-    //여기서만 사용되는 final 객체
+    //Dependency Injection을 위해 생성자를 주입
     private final ProductRepository productRepository;
-    //해당 객체를 통해서 만들어진 Repository 생성자
-    public ProductService(ProductRepository productRepository){
+    private final GsCrawling gsCrawling;
+    public ProductService(ProductRepository productRepository, GsCrawling gsCrawling){
         this.productRepository = productRepository;
+        this.gsCrawling = gsCrawling;
     }
+
+
 
     public List<ProductDTO> findAllProducts(){
         //repository를 통해서 DB 접속
         //read all
         List<ProductEntity> productList = productRepository.findAll();
-        List<ProductDTO> resultWithinDTO =productList.stream().map(this::productDtoToProductEntity).collect(Collectors.toList());
+        List<ProductDTO> resultWithinDTO =productList.stream().map(this::productEntityToProductDTO).collect(Collectors.toList());
         return resultWithinDTO;
     }
     //ProductEntity를 ProductDTO로변환해주는 메서드
-    private ProductDTO productDtoToProductEntity(ProductEntity productEntity){
+
+
+    public CrawlingResultDTO productCrawling() throws Exception {
+        //새로 crawling 하기 위해 DB 초기화
+        productRepository.deleteAll();
+        //crawling시도 후 성공 메시지와 함께 크롤링 된 상품 갯수 알려줌
+        //전체 리스트 객체 생성
+        List<ProductDTO> crawlingList;
+        List<ProductEntity> resultToEntity ;
+        ProductEntity productEntity;
+        //GS크롤링 Object 생성
+        crawlingList = gsCrawling.getEventProduct();
+        //SEVENELEVEN크롤링
+
+        //dto -> entity
+        resultToEntity =crawlingList.stream().map(this::productDTOToProductEntity).collect(Collectors.toList());
+        //crawling후에 DB에 등록
+        productRepository.saveAll(resultToEntity);
+        //결과 return
+        //나중에 spring bean에서 가져오는 걸로 수정
+        CrawlingResultDTO crawlingResult = new CrawlingResultDTO(true, resultToEntity.size());
+        return crawlingResult;
+    }
+    private ProductDTO productEntityToProductDTO(ProductEntity productEntity){
         return ProductDTO.builder()
                 .name(productEntity.getPid().getName())
                 .convname(productEntity.getPid().getConvname())
@@ -39,22 +66,14 @@ public class ProductService {
                 .image(productEntity.getImage())
                 .build();
     }
-
-    public CrawlingResultDTO productCrawling() throws Exception {
-        //crawling시도 후 성공 메시지와 함께 크롤링 된 상품 갯수 알려줌
-        //전체 리스트 객체 생성
-        List<ProductDTO> result;
-        //GS크롤링 Object 생성
-        //나중에 spring bean으로 수정 , 지금은 그냥 새로운 객체로
-        GsCrawling gsCrawling = new GsCrawling();
-        gsCrawling.getEventProduct();
-        //SEVENELEVEN크롤링
-
-        //crawling후에 DB에 등록
-        //결과 return
-        //나중에 spring bean에서 가져오는 걸로 수정
-//        CrawlingResultDTO crawlingResult = new CrawlingResultDTO(true, result.size());
-//        return crawlingResult;
-        return null;
+    private ProductEntity productDTOToProductEntity(ProductDTO productDTO){
+        return ProductEntity.builder()
+                .pid(new ProductId(productDTO.getName(), productDTO.getConvname()))
+                .price(productDTO.getPrice())
+                .pb(productDTO.getPb())
+                .event(productDTO.getEvent())
+                .category(productDTO.getCategory())
+                .image(productDTO.getImage())
+                .build();
     }
 }

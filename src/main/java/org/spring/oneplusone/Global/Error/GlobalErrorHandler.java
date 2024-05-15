@@ -17,7 +17,6 @@ import java.io.IOException;
 //Spring 예외를 미리 처리해둔 추상 클래스를 상속 받음
 public class GlobalErrorHandler extends ResponseEntityExceptionHandler {
 
-
     @ExceptionHandler({Exception.class})
     protected ResponseEntity handleServerException(Exception ex){
         System.out.println(ex);
@@ -26,4 +25,10 @@ public class GlobalErrorHandler extends ResponseEntityExceptionHandler {
                     , HttpStatus.INTERNAL_SERVER_ERROR
         );
     }
+//    @ExceptionHandler({GSEventException.class})
+//    protected ResponseEntity handleGSEventProductCrawlingException(Exception ex){
+//        return new ResponseEntity(
+//                new ErrorDTO((ErrorList.GSEVENT.getErrmsg())),HttpStatus.INTERNAL_SERVER_ERROR
+//        );
+//    }
 }

@@ -1,5 +1,6 @@
 package org.spring.oneplusone.Controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import org.spring.oneplusone.DTO.ProductDTO;
 import org.spring.oneplusone.DTO.CrawlingResultDTO;
 
@@ -23,10 +24,11 @@ public class ProductController {
         this.productService = productService;
     }
 
+    @Operation(summary = "DB읽어오기", description = "전체 DB를 읽어온다")
     @GetMapping("/readAll")
     public ResponseEntity<?> getAllProduct() throws Exception{
-
-        return new ResponseEntity<>(HttpStatus.OK);
+        List<ProductDTO> allProductResult = productService.findAllProducts();
+        return new ResponseEntity<>(allProductResult, HttpStatus.OK);
     }
 
     @PostMapping("/crawling")

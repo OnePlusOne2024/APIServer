@@ -1,12 +1,9 @@
 package org.spring.oneplusone.DTO;
 
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-@NoArgsConstructor //객체 생성
+@AllArgsConstructor //객체 생성
 @Getter //값 읽어오기
 @Setter //생성 후에 값 변경
 //@NoArgsConstructor(access = AccessLevel.PROTECTED)//아래에서 생성자를 만들었음(@Builder 사용)

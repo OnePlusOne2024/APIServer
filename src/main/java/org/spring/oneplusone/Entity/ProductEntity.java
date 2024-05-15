@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.spring.oneplusone.Global.Enums.ConvName;
 
 
 @Entity
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "product")
 public class ProductEntity {
     @Column
-    private Integer price;
+    private int price;
     @Column
     private Boolean pb;
     @Column(length = 6)
@@ -27,7 +28,7 @@ public class ProductEntity {
     private ProductId pid;
 
     @Builder
-    public ProductEntity(ProductId pid,Integer price, Boolean pb, String event, String category, String image){
+    public ProductEntity(ProductId pid,int price, Boolean pb, String event, String category, String image){
         this.pid = pid;
         this.price = price;
         this.pb = pb;
@@ -35,5 +36,6 @@ public class ProductEntity {
         this.category = category;
         this.image = image;
     }
+    //pid를 처리해주는 custom method
 }
 

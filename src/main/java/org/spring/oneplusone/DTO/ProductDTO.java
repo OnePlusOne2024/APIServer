@@ -13,7 +13,7 @@ import org.spring.oneplusone.Global.Enums.ConvName;
 public class ProductDTO {
     private String name;
     private ConvName convname;
-    private Integer price;
+    private int price;
     private Boolean pb;
     private String event;
     private String category;
