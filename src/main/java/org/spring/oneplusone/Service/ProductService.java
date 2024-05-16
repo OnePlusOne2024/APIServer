@@ -60,7 +60,7 @@ public class ProductService {
         productRepository.saveAll(resultToEntity);
         //결과 return
         //나중에 spring bean에서 가져오는 걸로 수정
-        CrawlingResultDTO crawlingResult = new CrawlingResultDTO(true, resultToEntity.size());
+        CrawlingResultDTO crawlingResult = new CrawlingResultDTO(resultToEntity.size());
         System.out.println("SERVICE FINISH");
         return crawlingResult;
     }
