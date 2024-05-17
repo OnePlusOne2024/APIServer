@@ -13,10 +13,10 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 //basePackages옵션을 사용하면 특정 클래스만 제한적으로 적용 가능
 @RestControllerAdvice
 //Spring 예외를 미리 처리해둔 추상 클래스를 상속 받음
-public class GlobalErrorHandler extends ResponseEntityExceptionHandler {
+public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler({Exception.class})
-    protected ResponseEntity handleServerException(Exception ex){
+    @ExceptionHandler({CustomException.class})
+    protected ResponseEntity handleServerException(CustomException ex){
         System.out.println(ex);
         return new ResponseEntity(
                 new ErrorDTO(ErrorList.GSEVENT.getErrmsg())//새로운 객체를 통해서 DTO에 Errormsg 넣기(생성자를 통해서)

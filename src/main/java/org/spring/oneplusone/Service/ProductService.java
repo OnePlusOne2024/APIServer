@@ -37,7 +37,7 @@ public class ProductService {
     //ProductEntity를 ProductDTO로변환해주는 메서드
 
 
-    public CrawlingResultDTO productCrawling() throws Exception {
+    public CrawlingResultDTO productCrawling() {
         System.out.println("SERVICE START");
         //새로 crawling 하기 위해 DB 초기화
         System.out.println("Reset DB");

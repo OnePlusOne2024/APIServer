@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.spring.oneplusone.Utils.Error.CustomException;
 import org.spring.oneplusone.Utils.Response.ProductCrawlingAllResponse;
 import org.spring.oneplusone.Utils.Response.ProductReadAllResponse;
 import org.spring.oneplusone.DTO.ProductDTO;
@@ -37,7 +38,7 @@ public class ProductController {
                             schema = @Schema(implementation = ProductReadAllResponse.class)))
     })
     @GetMapping("/readAll")
-    public ResponseEntity<?> getAllProduct() throws Exception{
+    public ResponseEntity<?> getAllProduct() throws CustomException{
         System.out.println("Product ReadAll API START");
         List<ProductDTO> allProductResult = productService.findAllProducts();
         ProductReadAllResponse response = new ProductReadAllResponse(allProductResult, true);
@@ -52,7 +53,7 @@ public class ProductController {
                             schema = @Schema(implementation = ProductCrawlingAllResponse.class)))
     })
     @PostMapping("/crawling")
-    public ResponseEntity<?> crawlingAllProduct() throws Exception{
+    public ResponseEntity<?> crawlingAllProduct() throws CustomException {
         System.out.println("Product Crawling API START");
         //crawling시도 후 성공하면 성공 메시지 에러 발생하면 에러 메시지
         CrawlingResultDTO result = productService.productCrawling();
