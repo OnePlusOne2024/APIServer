@@ -1,0 +1,111 @@
+Configutation:
+  # 구성 이름
+  name: oneplusone-api-local
+
+  # [Properties] 설정에 사용되는 속성들을 정의
+  Properties:
+    Property:
+      - name: "log-path"
+        value: "Logs"
+      - name: "charset-UTF-8"
+        value: "UTF-8"
+      - name: "layout-pattern"
+        value: "%style{%d}{white} %highlight{%-5level} [%style{%t}{bright,blue}] %style{%C}{bright,yellow}: %msg%n%throwable"
+      - name: "error-log"
+        value: ${log-path}/oneplusoneAPI/api-error.log
+      - name: "auth-log"
+        value: ${log-path}/oneplusoneAPI/api-auth.log
+      - name: "json-log"
+        value: ${log-path}/oneplusoneAPI/api-json-info.log
+      - name: "rolling-file-log"
+        value: ${log-path}/rolling-file-log.log
+
+  # [Appenders] 로그 기록방식 정의
+  Appenders:
+    # [Appenders - Console] 콘솔에 로그를 출력하는 방식 정의
+    Console:
+      - name: console-appender
+        target: SYSTEM_OUT
+        ThresholdFilter:
+          level: WARN
+          onMatch: DENY
+          onMismatch: ACCEPT
+        PatternLayout:
+          pattern: ${layout-pattern}
+
+    # [Appenders - RollingFile] 로그를 파일들을 압축파일로 출력하는 방식 정의
+    RollingFile:
+      name: rolling-file-appender
+      fileName: ${rolling-file-log}
+      filePattern: "${log-path}/archive/rollingFile.log.%d{yyyy-MM-dd-hh-mm}_%i.zip"
+      ThresholdFilter:
+        level: WARN
+        onMatch: DENY
+        onMismatch: ACCEPT
+      PatternLayout:
+        charset: ${charset-UTF-8}
+        pattern: ${layout-pattern}
+      Policies:
+        SizeBasedTriggeringPolicy:
+          size: "5MB"
+        TimeBasedTriggeringPolicy:
+          interval: "20"
+      DefaultRollOverStrategy:
+        max: "30"
+        fileIndex: "max"
+
+      # [Appenders - File] 로그를 파일로 기록하는 방식 정의
+    File:
+      - name: file-error-appender
+        fileName: ${error-log}
+        ThresholdFilter:
+          level: ERROR
+          onMatch: ACCEPT
+          onMismatch: DENY
+        PatternLayout:
+          pattern: "%d %p %C{1.} [%t] %m%n"
+      - name: file-auth-appender
+        fileName: ${auth-log}
+        PatternLayout:
+          pattern: "%d %p %C{1.} [%t] %m%n"
+      - name: file-json-info-appender
+        fileName: ${json-log}
+        PatternLayout:
+          pattern: "%d %p %C{1.} [%t] %m%n"
+
+  # [Loggers] 로그 출력 범위를 정의
+  Loggers:
+    # [Loggers - Root] 모든 로그를 기록하는 최상위 로그를 정의
+#    Root:
+#      level: INFO
+#      AppenderRef:
+#        - ref: console-appender
+
+    # [Loggers - Loggers] 특정 패키지나 클래스에 대한 로그를 정의
+    Logger:
+      - name: org.spring.oneplusone
+        additivity: "true" #중복 로깅 여부
+        level: DEBUG #debug 시에는 debug까지 전부 나오게
+        AppenderRef:
+          - ref: console-appender
+          - ref: rolling-file-appender
+          - ref: file-error-appender
+
+
+
+
+#      # 3. MyBatis 관련 로그 레벨 특정 패키지 외에는 모두 OFF
+#      - name: jdbc
+#        level: ON
+#      - name: jdbc.sqlonly
+#        level: OFF
+#      - name: jdbc.sqltiming
+#        level: INFO
+#      - name: jdbc.resultsettable
+#        level: OFF
+#      - name: jdbc.audit
+#        level: OFF
+#      - name: jdbc.resultset
+#        level: OFF
+#      - name: jdbc.connection
+#        level: ON

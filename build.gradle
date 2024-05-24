@@ -16,6 +16,10 @@ configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
+	configureEach {
+		// spring-boot-starter-web 라이브러리에 포함되어 있는 logging의 종속성을 제외합니다.
+		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+	}
 }
 
 repositories {
@@ -38,6 +42,9 @@ dependencies {
 	implementation 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
 	// jsoup HTML parser library @ https://jsoup.org/
 	implementation 'org.jsoup:jsoup:1.17.2'
+	//log4j2
+	implementation "org.springframework.boot:spring-boot-starter-log4j2";
+
 }
 
 tasks.named('test') {

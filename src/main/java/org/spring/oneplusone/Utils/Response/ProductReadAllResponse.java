@@ -8,12 +8,12 @@ import java.util.List;
 
 @Getter
 @Setter
-public class ProductReadAllResponse {
-    private Boolean success;
+public class ProductReadAllResponse implements BasicResponse<List<ProductDTO>> {
+    private boolean success;
     private List<ProductDTO> result;
 
-    public ProductReadAllResponse(List<ProductDTO> productDTOList, Boolean success) {
+    public ProductReadAllResponse(List<ProductDTO> result, boolean success) {
         this.success = success;
-        this.result = productDTOList;
+        this.result = result;
     }
 }

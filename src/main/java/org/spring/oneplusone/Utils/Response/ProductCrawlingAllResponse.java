@@ -6,12 +6,12 @@ import org.spring.oneplusone.DTO.CrawlingResultDTO;
 
 @Getter
 @Setter
-public class ProductCrawlingAllResponse {
-    private Boolean success;
+public class ProductCrawlingAllResponse implements BasicResponse<CrawlingResultDTO> {
+    private boolean success;
     private CrawlingResultDTO result;
 
-    public ProductCrawlingAllResponse(CrawlingResultDTO crawlingResultDTO, Boolean success) {
+    public ProductCrawlingAllResponse(CrawlingResultDTO result, boolean success) {
         this.success = success;
-        this.result = crawlingResultDTO;
+        this.result = result;
     }
 }

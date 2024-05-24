@@ -27,7 +27,7 @@ public interface Crawling {
         WebDriver driver = new ChromeDriver(service, options);
         driver.get(webStiePath);
         //가져오는 거 성공했다는 로그 남기기
-//        System.out.println(driver.getTitle());
+//        log.info(driver.getTitle());
         return driver;
     }
     //정확한 부분을 크롤링 해오는 추상 method

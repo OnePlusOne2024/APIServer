@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
+import org.spring.oneplusone.Utils.Enums.ErrorList;
 import org.spring.oneplusone.Utils.Error.CustomException;
 import org.spring.oneplusone.Utils.Response.ProductCrawlingAllResponse;
 import org.spring.oneplusone.Utils.Response.ProductReadAllResponse;
@@ -19,8 +21,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/product")
 public class ProductController {
@@ -39,10 +45,16 @@ public class ProductController {
     })
     @GetMapping("/readAll")
     public ResponseEntity<?> getAllProduct() throws CustomException{
-        System.out.println("Product ReadAll API START");
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//        LocalDateTime parsedDateTime = LocalDateTime.parse(clientTime, formatter);
+//        System.out.println("변환된 날짜와 시간: " + parsedDateTime);
+//        time !=
+//                if(Date 시간){}
+//                    else{}
+        log.info("Product ReadAll API START");
         List<ProductDTO> allProductResult = productService.findAllProducts();
         ProductReadAllResponse response = new ProductReadAllResponse(allProductResult, true);
-        System.out.println("Product ReadAll API FINISH");
+        log.info("Product ReadAll API FINISH");
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -54,11 +66,16 @@ public class ProductController {
     })
     @PostMapping("/crawling")
     public ResponseEntity<?> crawlingAllProduct() throws CustomException {
-        System.out.println("Product Crawling API START");
+        //먼저 시도되고 있는 crawling이 있는지 확인하기
+        log.info("Product Crawling API START");
         //crawling시도 후 성공하면 성공 메시지 에러 발생하면 에러 메시지
         CrawlingResultDTO result = productService.productCrawling();
         ProductCrawlingAllResponse response = new ProductCrawlingAllResponse(result, true);
-        System.out.println("Product Crawling API FINISH");
+        log.info("Product Crawling API FINISH");
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    public static Date convertStringToDate(String dateString) throws ParseException {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        return formatter.parse(dateString);
     }
 }

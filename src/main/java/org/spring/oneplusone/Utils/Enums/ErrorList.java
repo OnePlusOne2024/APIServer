@@ -10,18 +10,15 @@ import java.security.PrivateKey;
 @Getter
 @AllArgsConstructor//모든 변수 필요
 public enum ErrorList {
-    GSEVENT("GSEVENT--001", "GS-EVENT-CRAWLING-ERROR", HttpStatus.CONFLICT),
-    GSFRESHPB("GSFRESH--001", "GS-FRESH-CRAWLING-ERROR", HttpStatus.CONFLICT);
+    AlreadyCrawling("CRAWLING--001", "CRAWLING-ALREADY-RUNNING",false, HttpStatus.CONFLICT),
+    GSEventSelenium("GSEVENT--001", "[GS][행사상품페이지] Selenium에서 웹 요소를 못찾음", false,HttpStatus.CONFLICT),
+    GSEventWebElement("GSEVENT--002", "[GS][행사상품페이지] WebElement가 존재하지 않음", false,HttpStatus.CONFLICT),
+    GSEventCrawling("GSEVENT--003", "[GS][행사상품페이지] Crawling중 예기치 못한 에러 발생", false,HttpStatus.CONFLICT),
+    GSFresh("GSFRESH--001", "GS-FRESH-CRAWLING-ERROR",false, HttpStatus.CONFLICT);
 
-    private final String errmsg;//여기서만 사용, 변환 X
     private final String code;
+    private final String errmsg;//여기서만 사용, 변환 X
+    private final boolean success;
     private final HttpStatus httpStatus;
 
-    //생성자를 통해서 ErrorMessgae 삽입
-    //따로 생성하지는 않기 때문에 생성자는 삭제(추측)
-//    ErrorList(String code, String errmsg, HttpStatus httpStatus){
-//        this.code = code;
-//        this.httpStatus = httpStatus;
-//        this.errmsg = errmsg;
-//    }
 }

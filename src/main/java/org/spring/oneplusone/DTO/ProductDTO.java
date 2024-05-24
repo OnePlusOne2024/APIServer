@@ -9,7 +9,6 @@ import org.spring.oneplusone.Utils.Enums.ConvName;
 
 
 @Getter
-//@NoArgsConstructor(access = AccessLevel.PROTECTED)//아래에서 생성자를 만들었음(@Builder 사용)
 public class ProductDTO {
     private String name;
     private ConvName convname;

@@ -14,7 +14,7 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("OnePlusOne-api-server")
-                        .version("0.1")
+                        .version("0.2")
                         .description("OnePlusOne api server의 API 명세서입니다."));
     }
 }
