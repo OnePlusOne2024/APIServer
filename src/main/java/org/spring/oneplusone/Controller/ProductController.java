@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.spring.oneplusone.Utils.Enums.ErrorList;
 import org.spring.oneplusone.Utils.Error.CustomException;
+import org.spring.oneplusone.Utils.Response.ErrorResponse;
 import org.spring.oneplusone.Utils.Response.ProductCrawlingAllResponse;
 import org.spring.oneplusone.Utils.Response.ProductReadAllResponse;
 import org.spring.oneplusone.DTO.ProductDTO;
@@ -41,6 +42,9 @@ public class ProductController {
 
     @Operation(summary = "모든 상품 조회", description = "전체 데이터베이스에서 모든 상품을 조회합니다.")
     @ApiResponses(value = {
+            @ApiResponse(responseCode = "412", description = "Client의 데이터와 Server의 데이터가 동일합니다.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "200", description = "성공적으로 모든 상품을 조회하였습니다.",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ProductReadAllResponse.class)))
