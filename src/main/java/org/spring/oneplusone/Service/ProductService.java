@@ -4,12 +4,15 @@ package org.spring.oneplusone.Service;
 import lombok.extern.slf4j.Slf4j;
 import org.spring.oneplusone.DTO.CrawlingResultDTO;
 import org.spring.oneplusone.DTO.ProductDTO;
+import org.spring.oneplusone.Entity.CrawlingTimeEntity;
 import org.spring.oneplusone.Entity.ProductEntity;
 import org.spring.oneplusone.Entity.ProductId;
+import org.spring.oneplusone.Repository.CrawlingTimeRepository;
 import org.spring.oneplusone.Repository.ProductRepository;
 import org.spring.oneplusone.ServiceImpls.GsCrawling;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,9 +21,11 @@ import java.util.stream.Collectors;
 public class ProductService {
     //Dependency Injection을 위해 생성자를 주입
     private final ProductRepository productRepository;
+    private final CrawlingTimeRepository crawlingTimeRepository;
     private final GsCrawling gsCrawling;
-    public ProductService(ProductRepository productRepository, GsCrawling gsCrawling){
+    public ProductService(ProductRepository productRepository, CrawlingTimeRepository crawlingTimeRepository, GsCrawling gsCrawling){
         this.productRepository = productRepository;
+        this.crawlingTimeRepository = crawlingTimeRepository;
         this.gsCrawling = gsCrawling;
     }
 
@@ -40,6 +45,13 @@ public class ProductService {
 
     public CrawlingResultDTO productCrawling() {
         log.debug("SERVICE START");
+        //현재 진행중인 crawling이 있는지 확인하기
+        //없으면 id가 1인 데이터가 있는지 확인하고, 있으면 update, 없으면 create
+        //jpaRepository는 save가 자동적으로 create와 update를 한다
+        crawlingTimeRepository.save(CrawlingTimeEntity.builder()
+                .id(1L)
+                .latestCrawlingTime(LocalDateTime.now())
+                .build());
         //새로 crawling 하기 위해 DB 초기화
         log.debug("Reset DB");
         productRepository.deleteAll();
@@ -64,6 +76,12 @@ public class ProductService {
         CrawlingResultDTO crawlingResult = new CrawlingResultDTO(resultToEntity.size());
         log.debug("SERVICE FINISH");
         return crawlingResult;
+    }
+
+    public boolean checkClientNeedToUpdateProductData(LocalDateTime clientTime){
+        LocalDateTime latestCrawlingTime = crawlingTimeRepository.findById(1L).get().getLatestCrawlingTime();
+        log.info("서버 시간 : " + latestCrawlingTime);
+        return clientTime.isAfter(latestCrawlingTime);//LocalDateTime이 인자보다 이후인가
     }
     private ProductDTO productEntityToProductDTO(ProductEntity productEntity){
         return ProductDTO.builder()

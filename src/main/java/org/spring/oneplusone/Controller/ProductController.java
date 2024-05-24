@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 
@@ -44,14 +46,14 @@ public class ProductController {
                             schema = @Schema(implementation = ProductReadAllResponse.class)))
     })
     @GetMapping("/readAll")
-    public ResponseEntity<?> getAllProduct() throws CustomException{
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-//        LocalDateTime parsedDateTime = LocalDateTime.parse(clientTime, formatter);
-//        System.out.println("변환된 날짜와 시간: " + parsedDateTime);
-//        time !=
-//                if(Date 시간){}
-//                    else{}
+    public ResponseEntity<?> getAllProduct(String clientTime) throws CustomException{
         log.info("Product ReadAll API START");
+        LocalDateTime dateTime = LocalDateTime.parse(clientTime, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        log.info("Client시간: " + dateTime);
+        if(productService.checkClientNeedToUpdateProductData(dateTime)){
+            //client에 저장된 시간이 server에 저장된 시간 이후이므로 update할 필요가 없음
+            throw new CustomException(ErrorList.DONTNEEDTOUPDATE);
+        }
         List<ProductDTO> allProductResult = productService.findAllProducts();
         ProductReadAllResponse response = new ProductReadAllResponse(allProductResult, true);
         log.info("Product ReadAll API FINISH");
