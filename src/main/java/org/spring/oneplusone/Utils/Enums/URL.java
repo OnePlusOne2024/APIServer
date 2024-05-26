@@ -8,7 +8,8 @@ public enum URL {
     //GS25
     GSEVENTURL("http://gs25.gsretail.com/gscvs/ko/products/event-goods"),
     GSPBFRESHURL("http://gs25.gsretail.com/gscvs/ko/products/youus-freshfood"),
-    GSPBNOTFRESHURL("http://gs25.gsretail.com/gscvs/ko/products/youus-different-service");
+    GSPBNOTFRESHURL("http://gs25.gsretail.com/gscvs/ko/products/youus-different-service"),
+    GSCONVLIST("http://gs25.gsretail.com/gscvs/ko/store-services/locations#;");
 
     private final String url;
     //생성자를 통해서 URL 삽입
