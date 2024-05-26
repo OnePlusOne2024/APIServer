@@ -15,6 +15,8 @@ import org.spring.oneplusone.DTO.ProductDTO;
 import org.spring.oneplusone.DTO.CrawlingResultDTO;
 
 import org.spring.oneplusone.Service.ProductService;
+import org.spring.oneplusone.Utils.Status.CrawlingStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,28 +37,37 @@ import java.util.List;
 public class ProductController {
     //Inject product service class
     private final ProductService productService;
-
+    @Autowired
+    private CrawlingStatus crawlingStatus;
     public ProductController(ProductService productService) {
         this.productService = productService;
     }
 
     @Operation(summary = "모든 상품 조회", description = "전체 데이터베이스에서 모든 상품을 조회합니다.")
     @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "성공적으로 모든 상품을 조회하였습니다.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ProductReadAllResponse.class))),
             @ApiResponse(responseCode = "412", description = "Client의 데이터와 Server의 데이터가 동일합니다.",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "200", description = "성공적으로 모든 상품을 조회하였습니다.",
+            @ApiResponse(responseCode = "409", description = "현재 크롤링이 진행중입니다.",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ProductReadAllResponse.class)))
+                            schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/readAll")
     public ResponseEntity<?> getAllProduct(String clientTime) throws CustomException{
         log.info("Product ReadAll API START");
         LocalDateTime dateTime = LocalDateTime.parse(clientTime, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         log.info("Client시간: " + dateTime);
+        //client에 저장된 시간이 server에 저장된 시간 이후이므로 update할 필요가 없음
         if(productService.checkClientNeedToUpdateProductData(dateTime)){
-            //client에 저장된 시간이 server에 저장된 시간 이후이므로 update할 필요가 없음
-            throw new CustomException(ErrorList.DONTNEEDTOUPDATE);
+
+            throw new CustomException(ErrorList.DoNotNeedUpdate);
+        }
+        //Crawling이 진행중이면 해당 요청을 처리할 수 없음
+        if(crawlingStatus.isCrawling()){
+            throw new CustomException(ErrorList.AlreadyCrawling);
         }
         List<ProductDTO> allProductResult = productService.findAllProducts();
         ProductReadAllResponse response = new ProductReadAllResponse(allProductResult, true);
@@ -66,22 +77,32 @@ public class ProductController {
 
     @Operation(summary = "크롤링 시도", description = "GS25, 세븐일레븐, CU, 이마트에서 상품을 크롤링해서 DB에 저장한다.")
     @ApiResponses(value = {
+
             @ApiResponse(responseCode = "200", description = "성공적으로 상품을 crawling 해왔습니다.",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ProductCrawlingAllResponse.class)))
+                            schema = @Schema(implementation = ProductCrawlingAllResponse.class))),
+            @ApiResponse(responseCode = "409", description = "현재 크롤링이 진행중입니다.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping("/crawling")
     public ResponseEntity<?> crawlingAllProduct() throws CustomException {
         //먼저 시도되고 있는 crawling이 있는지 확인하기
-        log.info("Product Crawling API START");
-        //crawling시도 후 성공하면 성공 메시지 에러 발생하면 에러 메시지
-        CrawlingResultDTO result = productService.productCrawling();
-        ProductCrawlingAllResponse response = new ProductCrawlingAllResponse(result, true);
-        log.info("Product Crawling API FINISH");
+        if(crawlingStatus.isCrawling()){
+            throw new CustomException(ErrorList.AlreadyCrawling);
+        }
+        crawlingStatus.startCrawling();
+        ProductCrawlingAllResponse response;
+        try{
+            log.info("Product Crawling API START");
+            //crawling시도 후 성공하면 성공 메시지 에러 발생하면 에러 메시지
+            CrawlingResultDTO result = productService.productCrawling();
+            response = new ProductCrawlingAllResponse(result, true);
+            log.info("Product Crawling API FINISH");
+        } finally {
+            crawlingStatus.stopCrawling();
+        }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-    public static Date convertStringToDate(String dateString) throws ParseException {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-        return formatter.parse(dateString);
-    }
+
 }
