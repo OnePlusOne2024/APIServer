@@ -11,6 +11,8 @@ import org.spring.oneplusone.Utils.Enums.ConvName;
 import org.spring.oneplusone.Utils.Enums.ErrorList;
 import org.spring.oneplusone.Utils.Enums.URL;
 import org.spring.oneplusone.Utils.Error.CustomException;
+import org.spring.oneplusone.Utils.Status.CrawlingStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -21,6 +23,8 @@ import java.util.NoSuchElementException;
 @Slf4j
 @Component
 public class GsCrawling implements Crawling {
+    @Autowired
+    private CrawlingStatus crawlingStatus;
     public List<ProductDTO> getEventProduct() {
         log.debug("GS EVENT CRAWLING START");
         //enum에 선언된 url을 통해 크롤링 시도
@@ -110,22 +114,25 @@ public class GsCrawling implements Crawling {
             return crawlingResult;
         }catch (NoSuchElementException e) {
             driver.quit();
+            crawlingStatus.stopCrawling("productCrawling");
             // Selenium의 NoSuchElementException을 커스텀 예외로 변환하여 throw
             log.error("Selenium Error : NoSuchElementException");
             log.error(e.getMessage());
-            throw new CustomException(ErrorList.GSEventSelenium);
+            throw new CustomException(ErrorList.CRAWLING_SELENIUM);
         } catch (WebDriverException e) {
             driver.quit();
-            log.error("Selenium Error : NoSuchElementException");
+            crawlingStatus.stopCrawling("productCrawling");
+            log.error("Selenium Error : WebDriverException");
             log.error(e.getMessage());
             // Selenium의 일반적인 WebDriverException을 커스텀 예외로 변환하여 throw
-            throw new CustomException(ErrorList.GSEventWebElement);
+            throw new CustomException(ErrorList.CRAWLING_WEB_ELEMENT);
         }
         catch (Exception e) {
             driver.quit();
+            crawlingStatus.stopCrawling("productCrawling");
             // 일반적인 예외 처리
             log.error(e.getMessage());
-            throw new CustomException(ErrorList.GSEventCrawling);
+            throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);
         }
     }
 }

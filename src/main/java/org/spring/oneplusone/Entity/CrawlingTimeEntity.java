@@ -19,7 +19,7 @@ public class CrawlingTimeEntity {
     @Id
     private Long id; //1로 고정
 
-    @Column
+    @Column(nullable = false)
     private LocalDateTime latestCrawlingTime;
 
     @Builder

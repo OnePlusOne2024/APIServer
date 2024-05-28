@@ -12,10 +12,10 @@ import java.io.Serializable;
 @Embeddable
 @Getter
 public class ProductId implements Serializable {
-    @Column(length = 60)
+    @Column(length = 60, nullable = false)
     private String name;
     @Enumerated(EnumType.STRING)
-    @Column(length = 24)
+    @Column(length = 24, nullable = false)
     private ConvName convname;
 
     public ProductId(){};

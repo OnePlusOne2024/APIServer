@@ -8,8 +8,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.spring.oneplusone.Utils.Enums.ErrorList;
 import org.spring.oneplusone.Utils.Error.CustomException;
+import org.spring.oneplusone.Utils.Response.CrawlingAllResponse;
 import org.spring.oneplusone.Utils.Response.ErrorResponse;
-import org.spring.oneplusone.Utils.Response.ProductCrawlingAllResponse;
 import org.spring.oneplusone.Utils.Response.ProductReadAllResponse;
 import org.spring.oneplusone.DTO.ProductDTO;
 import org.spring.oneplusone.DTO.CrawlingResultDTO;
@@ -24,11 +24,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -55,7 +52,7 @@ public class ProductController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ErrorResponse.class)))
     })
-    @GetMapping("/readAll")
+    @GetMapping("/read_all")
     public ResponseEntity<?> getAllProduct(String clientTime) throws CustomException{
         log.info("Product ReadAll API START");
         LocalDateTime dateTime = LocalDateTime.parse(clientTime, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -63,14 +60,17 @@ public class ProductController {
         //client에 저장된 시간이 server에 저장된 시간 이후이므로 update할 필요가 없음
         if(productService.checkClientNeedToUpdateProductData(dateTime)){
 
-            throw new CustomException(ErrorList.DoNotNeedUpdate);
+            throw new CustomException(ErrorList.DO_NOT_NEED_UPDATE);
         }
         //Crawling이 진행중이면 해당 요청을 처리할 수 없음
-        if(crawlingStatus.isCrawling()){
-            throw new CustomException(ErrorList.AlreadyCrawling);
+        if(crawlingStatus.isCrawling("productCrawling")){
+            throw new CustomException(ErrorList.ALREADY_CRAWLING);
         }
         List<ProductDTO> allProductResult = productService.findAllProducts();
-        ProductReadAllResponse response = new ProductReadAllResponse(allProductResult, true);
+        ProductReadAllResponse response = ProductReadAllResponse.builder()
+                .success(true)
+                .result(allProductResult)
+                .build();
         log.info("Product ReadAll API FINISH");
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -80,7 +80,7 @@ public class ProductController {
 
             @ApiResponse(responseCode = "200", description = "성공적으로 상품을 crawling 해왔습니다.",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ProductCrawlingAllResponse.class))),
+                            schema = @Schema(implementation = CrawlingAllResponse.class))),
             @ApiResponse(responseCode = "409", description = "현재 크롤링이 진행중입니다.",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ErrorResponse.class)))
@@ -88,19 +88,22 @@ public class ProductController {
     @PostMapping("/crawling")
     public ResponseEntity<?> crawlingAllProduct() throws CustomException {
         //먼저 시도되고 있는 crawling이 있는지 확인하기
-        if(crawlingStatus.isCrawling()){
-            throw new CustomException(ErrorList.AlreadyCrawling);
+        if(crawlingStatus.isCrawling("productCrawling")){
+            throw new CustomException(ErrorList.ALREADY_CRAWLING);
         }
-        crawlingStatus.startCrawling();
-        ProductCrawlingAllResponse response;
+        log.info("Product Crawling API START");
+        crawlingStatus.startCrawling("productCrawling");
+        CrawlingAllResponse response;
         try{
-            log.info("Product Crawling API START");
             //crawling시도 후 성공하면 성공 메시지 에러 발생하면 에러 메시지
             CrawlingResultDTO result = productService.productCrawling();
-            response = new ProductCrawlingAllResponse(result, true);
+            response = CrawlingAllResponse.builder()
+                    .result(result)
+                    .success(true)
+                    .build();
             log.info("Product Crawling API FINISH");
         } finally {
-            crawlingStatus.stopCrawling();
+            crawlingStatus.stopCrawling("productCrawling");
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

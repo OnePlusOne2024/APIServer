@@ -12,15 +12,15 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(name = "product")
 public class ProductEntity {
-    @Column
+    @Column(nullable = false)
     private int price;
-    @Column
+    @Column(nullable = false)
     private Boolean pb;
-    @Column(length = 6)
+    @Column(length = 6, nullable = false)
     private String event;
-    @Column(length = 10)
+    @Column(length = 10, nullable = false)
     private String category;
-    @Column(length = 255)
+    @Column(length = 255, nullable = false)
     private String image;
 
     @EmbeddedId
