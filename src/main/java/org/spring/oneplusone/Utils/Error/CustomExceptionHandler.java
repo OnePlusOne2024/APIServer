@@ -22,7 +22,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         log.error(ErrorList.BAD_REQUEST.getHttpStatus().name());
         log.error(ErrorList.BAD_REQUEST.getCode());
         log.error(ErrorList.BAD_REQUEST.getErrmsg());
-        ErrorResponse errorResponse = new ErrorResponse(ErrorList.BAD_REQUEST.isSuccess(),ErrorList.BAD_REQUEST.getCode());
+        ErrorResponse errorResponse = ErrorResponse.builder().success(ErrorList.BAD_REQUEST.isSuccess()).result(ErrorList.BAD_REQUEST.getCode()).build();
         log.debug("ErrorResponse: {}, {}", errorResponse.getResult(), errorResponse.isSuccess());
         ResponseEntity<ErrorResponse> responseEntity = new ResponseEntity<>(errorResponse, ErrorList.BAD_REQUEST.getHttpStatus());
         log.debug("ResponseEntity: {}, {}", responseEntity.getHeaders().getContentLength(), responseEntity.getHeaders().getContentType());
@@ -33,7 +33,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         log.error(ex.error.getHttpStatus().name());
         log.error(ex.error.getCode());
         log.error(ex.error.getErrmsg());
-        ErrorResponse errorResponse = new ErrorResponse( ex.error.isSuccess(),ex.error.getCode());
+        ErrorResponse errorResponse = ErrorResponse.builder().success(ex.error.isSuccess()).result(ex.error.getCode()).build();
         log.debug("ErrorResponse: {}, {}", errorResponse.getResult(), errorResponse.isSuccess());
         ResponseEntity<ErrorResponse> responseEntity = new ResponseEntity<>(errorResponse, ex.error.getHttpStatus());
         log.debug("ResponseEntity: {}, {}", responseEntity.getHeaders().getContentLength(), responseEntity.getHeaders().getContentType());

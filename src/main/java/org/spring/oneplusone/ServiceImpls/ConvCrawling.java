@@ -69,7 +69,7 @@ public class ConvCrawling implements Crawling {
                     blockUI = driver.findElement(By.className("blockUI"));
                     wait.until(ExpectedConditions.stalenessOf(blockUI));
                 }
-                log.debug("현재 페이지 : {}", f);
+                log.info("현재 페이지 : {}", f);
                 convList = convListTBody.findElements(By.tagName("tr"));
                 for (int z = 0; z < convList.size(); z++) {
                     WebElement convName = convList.get(z).findElement(By.className("st_name"));

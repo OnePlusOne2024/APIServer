@@ -12,8 +12,8 @@ public class ConvDTO {
     private ConvName convBrandName;
     private String convName;
     private String convAddr;
-    private double x;
-    private double y;
+    private double x;//longitude
+    private double y;//latitude
     @Builder
     ConvDTO(String convName, String convAddr, double x, double y , ConvName convBrandName){
         this.convAddr = convAddr;
