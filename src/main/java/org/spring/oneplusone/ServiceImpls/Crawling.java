@@ -4,10 +4,13 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
+import java.util.ArrayList;
+import java.util.List;
 
 //Crawling interface 정의
 public interface Crawling {
-
+    // WebDriver 인스턴스를 추적하기 위한 리스트
+    List<WebDriver> activeWebDrivers = new ArrayList<>();
     //SevenEleven
     //Emart
     //CU1
@@ -26,14 +29,31 @@ public interface Crawling {
         //해당 객체를 변수로 가지는 ChromerDriver객체 생성
         WebDriver driver = new ChromeDriver(service, options);
         driver.get(webStiePath);
-        //가져오는 거 성공했다는 로그 남기기
-//        log.info(driver.getTitle());
+
+        // WebDriver 인스턴스를 추적 리스트에 추가
+        synchronized (activeWebDrivers) {
+            activeWebDrivers.add(driver);
+        }
         return driver;
     }
     //정확한 부분을 크롤링 해오는 추상 method
     //interface는 자동 public
 //    List<ProductDTO> getProduct();
     //해당 메서드가 여러차례 다르게 재정의 되야 될 거 같아서 명시X, 나중에 추상클래스 등을 고려해보기
+
+    //모든 WebDriver를 삭제해주는 매서드
+    default void stopAllCrawling() {
+        synchronized (activeWebDrivers) {
+            for (WebDriver driver : activeWebDrivers) {
+                try {
+                    driver.quit();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            activeWebDrivers.clear(); // 리스트 비우기
+        }
+    }
 }
 
 

@@ -25,17 +25,18 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/convenience")
 public class ConvController {
     private final ConvService convService;
-    @Autowired
     private CrawlingStatus crawlingStatus;
 
-    public ConvController(ConvService convService) {
+    public ConvController(ConvService convService, CrawlingStatus crawlingStatus) {
         this.convService = convService;
+        this.crawlingStatus = crawlingStatus;
     }
 
     @Operation(summary = "편의점 크롤링 시도", description = "GS25, 세븐일레븐, CU, 이마트에서 상품을 크롤링해서 DB에 저장한다.")
@@ -144,13 +145,17 @@ public class ConvController {
             throw new CustomException(ErrorList.ALREADY_CRAWLING);
         }
         log.info("Convenience Read All API START");
-        List<ConvDTO> convList = convService.readConvList();
-        ConvenienceReadAllResponse result = ConvenienceReadAllResponse.builder()
-                .result(convList)
-                .success(true)
-                .build();
-        log.debug("convenience Read All Api Finish");
-        return new ResponseEntity<>(result, HttpStatus.OK);
+        try{
+            List<ConvDTO> convList = convService.readConvList();
+            ConvenienceReadAllResponse result = ConvenienceReadAllResponse.builder()
+                    .result(convList)
+                    .success(true)
+                    .build();
+            log.debug("convenience Read All Api Finish");
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        }catch(CustomException ex){
+            throw ex;
+        }
     }
 
     @Operation(summary = "근처 1km 내의 편의점 조회", description = "근처 1km 내의 편의점 데이터를 전부 읽어온다.")
@@ -189,15 +194,15 @@ public class ConvController {
     @GetMapping("/near_conv")
     public ResponseEntity<?> getNearConvList(
             @Parameter(description = "경도, longitude", example = "127.02761")
-            @RequestParam double x,
+            @RequestParam double longitude,
             @Parameter(description = "위도, latitude", example = "37.5665")
-            @RequestParam double y
+            @RequestParam double latitude
     ) throws CustomException {
         if (crawlingStatus.isCrawling("convenienceCrawling")) {
             throw new CustomException(ErrorList.ALREADY_CRAWLING);
         }
         log.info("Convenience Read Near Api START");
-        List<ConvDTO> convList = convService.readNearConvList(x, y);
+        List<ConvDTO> convList = convService.readNearConvList(latitude, longitude);
         ConvenienceReadAllResponse result = ConvenienceReadAllResponse.builder()
                 .result(convList)
                 .success(true)

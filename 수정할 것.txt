@@ -1,0 +1,50 @@
+1. Crawling시에 버튼 클릭하는 거 모듈화
+(버튼찾기 위해 사용되는 코드 반복 삭제)
+2. 나중에 로그출력하기
+3. 페이지 로딩중에 에러 발생 할 수 있음
+--> except 잡아야됨
+--> default
+Please see https://chromedriver.chromium.org/security-considerations for suggestions on keeping ChromeDriver safe.
+ChromeDriver was started successfully.
+2024-04-29T00:32:43.917+09:00  WARN 30436 --- [oneplusone] [nio-8080-exec-1] o.o.selenium.devtools.CdpVersionFinder   : Unable to find an exact match for CDP version 124, returning the closest version; found: 123; Please update to a Selenium version that supports CDP version 124
+위의 부분에서 무한 루프 발생 (GsCrawling에서 chromedriver
+
+4. gsCrawling에서 wait 재할당 해야되는거 메모리 관리 해보기
+
+
+
+
+
+
+
+--------------
+
+
+1. LOG 마무리 [했음]
+2. 이전 접속 시간에 업데이트 했는지 말하기[했음]
+
+-> 스프링 서버 -> 8080: 사용자
+-> 8080 최초 연결 다른 포트로 옮겨감 -> SESSION, COOKIE, IP, 한번 연결하면 끊기기 전까지는 다른 포트를 사용하는 걸로 아는데
+-> QUEUE -> 끊기는 API종료 시점 -> 같은사용자인지 모름
+1) 그냥 하나에서 끝낸다
+2) 너한테 값을 하나 줘서 변수값을 받는다
+-> 해킹 -> 
+
+update success : fail
+진짜 에러랑
+
+
+
+
+3. 시간 저장해서 크롤링 중에 안되게 하는거 
+4. CRAWLING 중복 안되게 하는거
+
+----
+
+
+나중에 수정할 것
+-> log4j2.yml : 안쓰는 로그 파일 수정하기
+
+---나중에 힘들었던 부분으로 할 것
+비동기 처리
+crawling 분석

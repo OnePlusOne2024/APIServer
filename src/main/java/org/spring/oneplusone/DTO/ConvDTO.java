@@ -12,13 +12,13 @@ public class ConvDTO {
     private ConvName convBrandName;
     private String convName;
     private String convAddr;
-    private double x;//longitude
-    private double y;//latitude
+    private double longitude;//longitude
+    private double latitude;//latitude
     @Builder
-    ConvDTO(String convName, String convAddr, double x, double y , ConvName convBrandName){
+    ConvDTO(String convName, String convAddr, double longitude, double latitude , ConvName convBrandName){
         this.convAddr = convAddr;
-        this.x = x;
-        this.y = y;
+        this.longitude = longitude;
+        this.latitude = latitude;
         this.convName = convName;
         this.convBrandName = convBrandName;
     }

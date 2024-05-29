@@ -23,12 +23,16 @@ import java.util.NoSuchElementException;
 @Slf4j
 @Component
 public class GsCrawling implements Crawling {
-    @Autowired
+
     private CrawlingStatus crawlingStatus;
+
+    public GsCrawling(CrawlingStatus crawlingStatus){
+        this.crawlingStatus = crawlingStatus;
+    }
     public List<ProductDTO> getEventProduct() {
         log.debug("GS EVENT CRAWLING START");
         //enum에 선언된 url을 통해 크롤링 시도
-        WebDriver driver = startingSession(URL.GSEVENTURL.getUrl());//WebDriver 생성
+        WebDriver driver = startingSession(URL.GS_EVENT_URL.getUrl());//WebDriver 생성
         //GS 행사 페이지에서 전체 목록 가져오기
         //driver에 대응하는 FluentWait객체를 생성
         try{

@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
+import org.spring.oneplusone.Service.ConvService;
 import org.spring.oneplusone.Utils.Enums.ErrorList;
 import org.spring.oneplusone.Utils.Error.CustomException;
 import org.spring.oneplusone.Utils.Response.ConvenienceReadAllResponse;
@@ -34,10 +35,10 @@ import java.util.List;
 public class ProductController {
     //Inject product service class
     private final ProductService productService;
-    @Autowired
     private CrawlingStatus crawlingStatus;
-    public ProductController(ProductService productService) {
+    public ProductController(ProductService productService, CrawlingStatus crawlingStatus) {
         this.productService = productService;
+        this.crawlingStatus = crawlingStatus;
     }
 
     @Operation(summary = "모든 상품 조회", description = "전체 데이터베이스에서 모든 상품을 조회합니다.")
@@ -89,14 +90,23 @@ public class ProductController {
             @RequestParam String clientTime
     ) throws CustomException{
         log.info("Product ReadAll API START");
-        LocalDateTime dateTime = LocalDateTime.parse(clientTime, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        log.info("Client시간: " + dateTime);
-        //client에 저장된 시간이 server에 저장된 시간 이후이므로 update할 필요가 없음
-        if(productService.checkClientNeedToUpdateProductData(dateTime)){
-            throw new CustomException(ErrorList.DO_NOT_NEED_UPDATE);
+        LocalDateTime dateTime = null;
+        if(clientTime != null){
+            try{
+                dateTime = LocalDateTime.parse(clientTime, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            }catch(Exception ex){
+                throw new CustomException(ErrorList.BAD_PARAM);
+            }
+            log.info("Client시간: " + dateTime);
+            //client에 저장된 시간이 server에 저장된 시간 이후이므로 update할 필요가 없음
+            if (productService.checkClientNeedToUpdateProductData(dateTime)) {
+                throw new CustomException(ErrorList.DO_NOT_NEED_UPDATE);
+            }
+        }else if(clientTime == null) {
+            log.info("앱 첫 설치자");
         }
         //Crawling이 진행중이면 해당 요청을 처리할 수 없음
-        if(crawlingStatus.isCrawling("productCrawling")){
+        if (crawlingStatus.isCrawling("productCrawling")) {
             throw new CustomException(ErrorList.ALREADY_CRAWLING);
         }
         List<ProductDTO> allProductResult = productService.findAllProducts();

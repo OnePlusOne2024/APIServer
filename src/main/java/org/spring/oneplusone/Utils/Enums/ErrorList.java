@@ -10,7 +10,8 @@ import java.security.PrivateKey;
 @Getter
 @AllArgsConstructor//모든 변수 필요
 public enum ErrorList {
-    BAD_REQUEST("BADREQUEST", "request가 잘못 되었습니다", false, HttpStatus.BAD_REQUEST),
+    BAD_REQUEST("BAD-REQUEST", "request가 잘못 되었습니다", false, HttpStatus.BAD_REQUEST),
+    BAD_PARAM("BAD-PARAM", "parameter의 시간 값이 잘못 되었습니다", false, HttpStatus.BAD_REQUEST),
     ALREADY_CRAWLING("CRAWLING--001", "CRAWLING-ALREADY-RUNNING",false, HttpStatus.CONFLICT),
     DO_NOT_NEED_UPDATE("PRODUCT-001", "Client의 Data와 Server의 Data가 동일함",false, HttpStatus.PRECONDITION_FAILED),
     CRAWLING_SELENIUM("CRAWLING--002", "Selenium에서 웹 요소를 못찾음", false,HttpStatus.INTERNAL_SERVER_ERROR),

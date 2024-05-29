@@ -25,15 +25,15 @@ public class ConvEntity {
     @Column(nullable = false)
     private String convAddr;
     @Column(nullable = false)
-    private double x; //longitude
+    private double longitude; //longitude
     @Column(nullable = false)
-    private double y; //latitude
+    private double latitude; //latitude
 
     @Builder
-    ConvEntity(String convName, String convAddr, double x, double y , String id, ConvName convBrandName){
+    ConvEntity(String convName, String convAddr, double longitude, double latitude , String id, ConvName convBrandName){
         this.convAddr = convAddr;
-        this.x = x;
-        this.y = y;
+        this.longitude = longitude;
+        this.latitude = latitude;
         this.convName = convName;
         this.id = id;
         this. convBrandName = convBrandName;

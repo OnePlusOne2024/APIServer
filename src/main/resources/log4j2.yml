@@ -77,7 +77,7 @@ Configutation:
   Loggers:
     # [Loggers - Root] 모든 로그를 기록하는 최상위 로그를 정의
     Root:
-      level: ERROR
+      level: INFO
       AppenderRef:
         - ref: console-appender
         - ref: rolling-file-appender
@@ -93,12 +93,13 @@ Configutation:
           - ref: rolling-file-appender
           - ref: file-error-appender
       ##배포시에 사용
-#      - name: org.spring.oneplusone
-#        additivity: "false" #중복 로깅 여부
-#        level: DEBUG #debug 시에는 debug까지 전부 나오게
-#        AppenderRef:
-#          - ref: rolling-file-appender
-#          - ref: file-error-appender
+      - name: org.spring
+        additivity: "false" #중복 로깅 여부
+        level: INFO #debug 시에는 debug까지 전부 나오게
+        AppenderRef:
+          - ref: console-appender
+          - ref: rolling-file-appender
+          - ref: file-error-appender
 
 
 
