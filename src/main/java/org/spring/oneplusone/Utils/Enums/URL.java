@@ -8,8 +8,9 @@ public enum URL {
     //GS25
     GS_EVENT_URL("http://gs25.gsretail.com/gscvs/ko/products/event-goods"),
     GS_PB_FRESH_URL("http://gs25.gsretail.com/gscvs/ko/products/youus-freshfood"),
-    GS_PB_NOT_FRESHURL("http://gs25.gsretail.com/gscvs/ko/products/youus-different-service"),
-    GS_CONV_LIST("http://gs25.gsretail.com/gscvs/ko/store-services/locations#;"),
+    GS_PB_NOT_FRESH_URL("http://gs25.gsretail.com/gscvs/ko/products/youus-different-service"),
+    GS_CONV_URL("http://gs25.gsretail.com/gscvs/ko/store-services/locations#;"),
+    CU_CONV_URL("https://cu.bgfretail.com/store/list.do?category=store"),
     SEVEN_ELEVEN_CONV_LIST("http://www.7-eleven.co.kr/");
 
     private final String url;

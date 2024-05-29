@@ -35,9 +35,8 @@ public class GsConvCrawling implements Crawling {
     }
 
     public List<ConvDTO> getConvList() {
-
         log.info("GS 편의점 크롤링 시작");
-        WebDriver driver = startingSession(URL.GS_CONV_LIST.getUrl());
+        WebDriver driver = startingSession(URL.GS_CONV_URL.getUrl());
         try {
             Wait<WebDriver> wait = new FluentWait<>(driver)
                     .withTimeout(Duration.ofSeconds(40))
@@ -61,6 +60,8 @@ public class GsConvCrawling implements Crawling {
             Pattern pattern = Pattern.compile("\\(([^)]+)\\)");
             WebElement prevButton = pageList.findElement(By.className("prev"));
             ConvDTO convInfo;
+            double latitude;
+            double longitude;
             int undefineCoordinateConv = 0;//좌표가 제대로 연락되어 있지 않은 편의점
             log.info("[GS25]GS 편의점 최대 페이지 : {}", maxPageNum);
             for (int f = maxPageNum; f > 0; f--) {
@@ -97,8 +98,14 @@ public class GsConvCrawling implements Crawling {
                             log.debug("좌표가 없는 편의점 : ",undefineCoordinateConv);
                             continue;
                         }
-                        double latitude = coordinateList.get(0);
-                        double longitude = coordinateList.get(1);
+                        if(coordinateList.get(0) > coordinateList.get(1)){
+                            longitude = coordinateList.get(0);
+                            latitude = coordinateList.get(1);
+                        }else{
+                            latitude = coordinateList.get(0);
+                            longitude = coordinateList.get(1);
+                        }
+
                         convInfo = ConvDTO.builder()
                                 .longitude(longitude)
                                 .latitude(latitude)

@@ -202,7 +202,7 @@ public class ConvController {
             throw new CustomException(ErrorList.ALREADY_CRAWLING);
         }
         log.info("Convenience Read Near Api START");
-        List<ConvDTO> convList = convService.readNearConvList(latitude, longitude);
+        List<ConvDTO> convList = convService.readNearConvList(longitude,latitude);
         ConvenienceReadAllResponse result = ConvenienceReadAllResponse.builder()
                 .result(convList)
                 .success(true)

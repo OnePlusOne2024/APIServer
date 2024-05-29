@@ -42,7 +42,7 @@ public class SevenConvCrawling implements Crawling {
                         .withTimeout(Duration.ofSeconds(40))
                         .pollingEvery(Duration.ofMillis(1))
                         .ignoring(NoSuchElementException.class);
-                WebElement findStoreButton = wait.until((WebDriver d) -> d.findElement(By.cssSelector(".util_store.store_open")));
+                WebElement findStoreButton = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".util_store.store_open")));
                 findStoreButton.click();
                 wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("layer_pop_wrap")));
                 WebElement storeElement = wait.until(ExpectedConditions.presenceOfElementLocated(By.name("storeForm")));
@@ -64,6 +64,7 @@ public class SevenConvCrawling implements Crawling {
                 WebElement storeAddress;
                 double longitude;
                 double latitude;
+                List<Double> coordinate = new ArrayList<>();
                 Pattern pattern = Pattern.compile("markerClick\\(\\d+,(\\d+\\.\\d+),(\\d+\\.\\d+)\\)");
                 Matcher matcher;
                 ConvDTO convInfo;
@@ -109,14 +110,22 @@ public class SevenConvCrawling implements Crawling {
                                 String addressHref = storeAddress.getAttribute("href");
                                 matcher = pattern.matcher(addressHref);
                                 if (matcher.find()) {
-                                    latitude = Double.parseDouble(matcher.group(1));
-                                    longitude = Double.parseDouble(matcher.group(2));
+                                    coordinate.add(Double.parseDouble(matcher.group(1)));
+                                    coordinate.add(Double.parseDouble(matcher.group(2)));
+                                    if(coordinate.get(0) > coordinate.get(1)){
+                                        longitude = coordinate.get(0);
+                                        latitude = coordinate.get(1);
+                                    }else{
+                                        latitude = coordinate.get(0);
+                                        longitude = coordinate.get(1);
+                                    }
+
                                     convInfo = ConvDTO.builder()
                                             .longitude(longitude)
                                             .latitude(latitude)
                                             .convAddr(convName)
                                             .convName(convAddr)
-                                            .convBrandName(ConvName.GS25)
+                                            .convBrandName(ConvName.SEVENELEVEN)
                                             .build();
                                     log.debug("[Seven Eleven]ConvName : {}, ConvAddr : {}, longitude : {}, latitude : {}", convName, convAddr, longitude, latitude);
                                     result.add(convInfo);

@@ -12,7 +12,7 @@ import org.spring.oneplusone.Utils.Enums.ConvName;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "conv_list", indexes = {
-        @Index(name = "idx_coordinates_xy", columnList = "x, y")
+        @Index(name = "idx_coordinates_longitude_latitude", columnList = "longitude, latitude")
 })
 public class ConvEntity {
     @Id

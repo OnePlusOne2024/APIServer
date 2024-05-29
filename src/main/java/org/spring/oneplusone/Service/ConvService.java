@@ -128,12 +128,12 @@ public class ConvService {
         return result;
     }
 
-    public List<ConvDTO> readNearConvList(double latitude, double longitude) {
+    public List<ConvDTO> readNearConvList(double longitude,double latitude) {
         log.debug("Near Conv List Service Start");
         double distanceInMeter = 1000;
         List<ConvEntity> convEntityList = new ArrayList<>();
         try {
-            convEntityList = convListRepository.findNearConv(latitude, longitude, distanceInMeter);
+            convEntityList = convListRepository.findNearConv(longitude, latitude, distanceInMeter);
         } catch (Exception ex) {
             log.error("에러 디테일 : ", ex);
             throw new CustomException(ErrorList.JPA_UNEXPECTED_ERROR);
