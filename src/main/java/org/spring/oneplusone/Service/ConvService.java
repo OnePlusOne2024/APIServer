@@ -6,23 +6,18 @@ import org.spring.oneplusone.DTO.CrawlingResultDTO;
 import org.spring.oneplusone.Entity.ConvEntity;
 import org.spring.oneplusone.Repository.ConvListRepository;
 import org.spring.oneplusone.ServiceImpls.CuConvCrawling;
+import org.spring.oneplusone.ServiceImpls.EmartConvCrawling;
 import org.spring.oneplusone.ServiceImpls.GsConvCrawling;
 import org.spring.oneplusone.ServiceImpls.SevenConvCrawling;
 import org.spring.oneplusone.Utils.Enums.ErrorList;
 import org.spring.oneplusone.Utils.Error.CustomException;
 import org.spring.oneplusone.Utils.Status.CrawlingStatus;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,6 +27,7 @@ public class ConvService {
     private final ConvListRepository convListRepository;
     private final SevenConvCrawling sevenConvCrawling;
     private final CuConvCrawling cuConvCrawling;
+    private final EmartConvCrawling emartConvCrawling;
 
     private CrawlingStatus crawlingStatus;
 
@@ -40,14 +36,15 @@ public class ConvService {
             GsConvCrawling gsConvCrawling,
             SevenConvCrawling sevenConvCrawling,
             CuConvCrawling cuConvCrawling,
+            EmartConvCrawling emartConvCrawling,
             ConvListRepository convListRepository) {
         this.gsConvCrawling = gsConvCrawling;
         this.convListRepository = convListRepository;
         this.sevenConvCrawling = sevenConvCrawling;
         this.crawlingStatus = crawlingStatus;
         this.cuConvCrawling = cuConvCrawling;
+        this.emartConvCrawling = emartConvCrawling;
     }
-
     public CrawlingResultDTO convCrawling() {
         log.debug("Service start");
         log.info("Reset DB");
@@ -60,64 +57,57 @@ public class ConvService {
         // futures: 크롤링 결과가 담긴 List<CompletableFuture<List<ConvDTO>>>들의 List
         ExecutorService executor = Executors.newFixedThreadPool(10);
         CompletableFuture<List<ConvDTO>> future1 = CompletableFuture.supplyAsync(() -> sevenConvCrawling.getConvList(), executor)
-                .handle((result, ex) -> {
-                    if (ex != null) {
+                .exceptionally(ex -> {
                         // future1에서 발생한 예외 처리
                         log.error("SevenEleven 편의점 크롤링 중 에러 발생(ConvService에서 처리) : {}" ,ex);
                         log.error("발생위치 : {}",ex.getStackTrace());
 //                        return Collections.emptyList(); // 예외 발생 시 빈 리스트 반환
                         throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);
-                    } else {
-                        return result;
-                    }
                 });
-
         CompletableFuture<List<ConvDTO>> future2 = CompletableFuture.supplyAsync(() -> gsConvCrawling.getConvList(), executor)
-                .handle((result, ex) -> {
-                    if (ex != null) {
+                .exceptionally(ex -> {
                         // future2에서 발생한 예외 처리
                         log.error("GS 편의점 크롤링 중 에러 발생(ConvService에서 처리) : {}" ,ex);
-//                        return Collections.emptyList(); // 예외 발생 시 빈 리스트 반환
+                    log.error("발생위치 : {}",ex.getStackTrace());
                         throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);
-                    } else {
-                        return result;
-                    }
                 });
         CompletableFuture<List<ConvDTO>> future3 = CompletableFuture.supplyAsync(() -> cuConvCrawling.getConvList(), executor)
-                .handle((result, ex) -> {
-                    if (ex != null) {
+                .exceptionally(ex -> {
                         // future2에서 발생한 예외 처리
                         log.error("CU 편의점 크롤링 중 에러 발생(ConvService에서 처리) : {}" ,ex);
-//                        return Collections.emptyList(); // 예외 발생 시 빈 리스트 반환
+                    log.error("발생위치 : {}",ex.getStackTrace());
                         throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);
-                    } else {
-                        return result;
-                    }
                 });
-
-// allFutures: futures들의 작업이 끝난 것을 합친 CompletableFuture
-        CompletableFuture<Void> allFutures = CompletableFuture.allOf(future3)
+        CompletableFuture<List<ConvDTO>> future4 = CompletableFuture.supplyAsync(() -> emartConvCrawling.getConvList(), executor)
                 .exceptionally(ex -> {
-                    // 모든 futures 중 하나라도 예외가 발생한 경우 여기서 처리
-                    log.error("Crawling 중 에러 발생: {}", ex.getMessage());
+                    log.error("Emart 편의점 크롤링 중 에러 발생(ConvService에서 처리): {}", ex);
+                    log.error("발생위치 : {}",ex.getStackTrace());
                     throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);
+                });
+        // allFutures: futures들의 작업이 끝난 것을 합친 CompletableFuture
+        CompletableFuture<Void> allFutures = CompletableFuture.allOf(future1, future2, future3,
+                        future4)
+                .exceptionally(ex -> {
+                    // CompletableFuture.allOf 자체에서 발생한 예외 처리
+                    log.error("CompletableFuture.allOf 중 예외 발생: {}", ex.getMessage());
+                    throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR); // 적절한 예외 처리 필요
                 });
         // allConvDTOListFutures: 모든 futures의 결과를 하나의 리스트로 수집하는 CompletableFuture
         CompletableFuture<List<ConvDTO>> allConvDTOListFutures = allFutures.thenApply(v -> {
             List<ConvDTO> combinedList = new ArrayList<>();
             try {
-                combinedList.addAll(future1.get()); // future1의 결과를 가져옴
-                combinedList.addAll(future2.get()); // future2의 결과를 가져옴
-                combinedList.addAll(future3.get()); // future3의 결과를 가져옴
-            } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeException(e);
+                combinedList.addAll(future1.join()); // join()을 사용하여 예외를 unchecked 형태로 받음
+                combinedList.addAll(future2.join());
+                combinedList.addAll(future3.join());
+                combinedList.addAll(future4.join());
+            } catch (CompletionException e) {
+                throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);
             }
             return combinedList;
         }).exceptionally(ex -> {
             // CompletableFuture 체인의 어느 부분에서든 예외가 발생하면 여기서 처리
             throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);
         });
-
         // 결과를 처리하고 저장하는 CompletableFuture
         CompletableFuture<CrawlingResultDTO> resultFuture = allConvDTOListFutures.thenApply(allConvDTOList -> {
             log.info("편의점의 총 갯수: {}", allConvDTOList.size());
@@ -136,8 +126,6 @@ public class ConvService {
         // 비동기 작업이 완료될 때까지 대기하고 결과 반환
         return resultFuture.join();
     }
-
-
     public List<ConvDTO> readConvList() {
         log.debug("ConvList Service Start");
         List<ConvEntity> convEntityList = new ArrayList<>();
@@ -166,7 +154,6 @@ public class ConvService {
         log.debug("Near Conv List Service Finish");
         return result;
     }
-
     private ConvEntity changeConvDTOToConvEntity(ConvDTO convDTO) {
         return ConvEntity.builder()
                 .convAddr(convDTO.getConvAddr())
@@ -177,7 +164,6 @@ public class ConvService {
                 .id(UUID.randomUUID().toString())
                 .build();
     }
-
     private ConvDTO changeConvEntityToConvDTO(ConvEntity convEntity) {
         return ConvDTO.builder()
                 .convBrandName(convEntity.getConvBrandName())

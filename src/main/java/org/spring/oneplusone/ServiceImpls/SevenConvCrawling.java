@@ -143,6 +143,7 @@ public class SevenConvCrawling implements Crawling {
                 }
                 driver.quit();
                 log.info("SevenEleven 편의점 크롤링 종료");
+                log.info("[SevenEleven]갯수 : {}", result.size());
                 return result;
             } catch (
                     NoSuchElementException e) {

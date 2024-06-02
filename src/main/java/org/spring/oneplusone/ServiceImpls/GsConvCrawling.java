@@ -118,9 +118,10 @@ public class GsConvCrawling implements Crawling {
                     }
                 }
             }
-            log.info("[GS25]좌표가 없는 편의점 총 갯수: ",undefineCoordinateConv);
+            log.info("GS5 편의점 크롤링 종료 ");
+            log.info("[갯수 : {}]", result.size());
+            log.info("좌표가 없는 편의점 총 갯수: ",undefineCoordinateConv);
             driver.quit();
-            log.info("[GS25]GS 편의점 크롤링 종료");
             return result;
         } catch (NoSuchElementException e) {
             log.error("[GS25]Selenium Error : NoSuchElementException\n ", e);

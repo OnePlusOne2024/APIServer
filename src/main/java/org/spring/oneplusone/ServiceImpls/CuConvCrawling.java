@@ -64,7 +64,7 @@ public class CuConvCrawling implements Crawling {
             String currentGuGunName;
             //동 select, option 변수 선언
             WebElement dongWebElement;
-            Select dongSelect;
+            Select dongSelect = null;
             List<WebElement> dongOptions;
             String currentDongName;
             //결과 반환용 List
@@ -99,7 +99,7 @@ public class CuConvCrawling implements Crawling {
                 //현재의 시,도를 선택하고 기다림
                 currentSiDoName = siDoOptions.get(sidoCurrentOption).getAttribute("value");
                 siDoSelect.selectByValue(currentSiDoName);
-                log.info("현재 시,도 : {}", currentSiDoName);
+                log.info("[CU]현재 시,도 : {}", currentSiDoName);
                 waitForFinishCiteLoading(driver, wait, 0, 5);
                 //바뀐 구,군을 가져옴
                 guGunWebElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.name("Gugun")));
@@ -109,17 +109,23 @@ public class CuConvCrawling implements Crawling {
                     //현재 구,군을 선택하고 기다림
                     currentGuGunName = guGunOptions.get(guGunCurrentOption).getAttribute("value");
                     guGunSelect.selectByValue(currentGuGunName);
-                    log.info("현재 구,군 : {}", currentGuGunName);
+                    log.info("[CU]현재 구,군 : {}", currentGuGunName);
                     waitForFinishCiteLoading(driver, wait, 0, 5);
                     //바뀐 동을 가져옴
-                    dongWebElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("Dong")));
-                    dongSelect = new Select(dongWebElement);
-                    dongOptions = dongSelect.getOptions();
+                    if(currentGuGunName == "세종특별자치시"){
+                        dongOptions = new ArrayList<>(2);
+                    }else {
+                        dongWebElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("Dong")));
+                        dongSelect = new Select(dongWebElement);
+                        dongOptions = dongSelect.getOptions();
+                    }
                     for (int dongCurrentOption = 1; dongCurrentOption < dongOptions.size(); dongCurrentOption++) {
                         //현재 동을 선택하고 기다림
-                        currentDongName = dongOptions.get(dongCurrentOption).getAttribute("value");
-                        dongSelect.selectByValue(currentDongName);
-                        log.info("현재 동 : {}", currentDongName);
+                        if(currentGuGunName != "세종특별자치시"){
+                            currentDongName = dongOptions.get(dongCurrentOption).getAttribute("value");
+                            dongSelect.selectByValue(currentDongName);
+                            log.info("[CU]현재 동 : {}", currentDongName);
+                        }
                         waitForFinishCiteLoading(driver, wait, 0, 5);
                         //검색 누르고 기다림
                         searchWrap = wait.until(ExpectedConditions.presenceOfElementLocated(By.className("search_wrap")));
@@ -172,6 +178,10 @@ public class CuConvCrawling implements Crawling {
                     }
                 }
             }
+
+            log.info("CU 편의점 크롤링 종료 ");
+            log.info("[CU]갯수 : {}", result.size());
+            driver.quit();
             return result;
         } catch (
                 NoSuchElementException e) {
