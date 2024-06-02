@@ -27,7 +27,7 @@ public interface Crawling {
 //                .usingDriverExecutable(driverpath) 추후에 driver경로를 설정 하고 싶을 때 사용
                 .build();
         //해당 객체를 변수로 가지는 ChromerDriver객체 생성
-        WebDriver driver = new ChromeDriver(service, options);
+        ChromeDriver driver = new ChromeDriver(service,options);
         driver.get(webStiePath);
 
         // WebDriver 인스턴스를 추적 리스트에 추가
