@@ -150,7 +150,6 @@ public class SevenConvCrawling implements Crawling {
                 log.error("[SevenEleven]Selenium Error : NoSuchElementException\n ", e);
                 log.error("시간 : {}", LocalDateTime.now());
                 log.error("발생위치 : {}",e.getStackTrace());
-//                driver.quit();
                 this.stopAllCrawling();
                 crawlingStatus.stopCrawling("convenienceCrawling");
                 throw new CustomException(ErrorList.CRAWLING_SELENIUM);
@@ -160,7 +159,6 @@ public class SevenConvCrawling implements Crawling {
                 log.error("시간 : {}", LocalDateTime.now());
                 log.error("발생위치 : {}",e.getStackTrace());
                 this.stopAllCrawling();
-//                driver.quit();
                 crawlingStatus.stopCrawling("convenienceCrawling");
                 this.stopAllCrawling();
                 throw new CustomException(ErrorList.CRAWLING_WEB_ELEMENT);
@@ -169,7 +167,6 @@ public class SevenConvCrawling implements Crawling {
                 log.error("[SevenEleven]에러 디테일 : ", e);
                 log.error("시간 : {}", LocalDateTime.now());
                 log.error("발생위치 : {}",e.getStackTrace());
-//                driver.quit();
                 this.stopAllCrawling();
                 crawlingStatus.stopCrawling("convenienceCrawling");
                 throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);

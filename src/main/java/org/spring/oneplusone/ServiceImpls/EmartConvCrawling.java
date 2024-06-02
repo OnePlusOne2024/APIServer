@@ -79,11 +79,11 @@ public class EmartConvCrawling implements Crawling {
             String convCount = jsonObject.getString("count");
             //마지막 페이지 번호 찾기
             int lastPageNum = (Integer.parseInt(convCount) / 40) +1;
-            log.info("최대 페이지 번호 : {}", lastPageNum);
+            log.info("[EMART]최대 페이지 번호 : {}", lastPageNum);
             JSONArray dataList;
             int wrongInfo = 0;
             for(int i =1 ; i<lastPageNum ; i++) {
-                log.debug("현재 페이지 : {}", i+1);
+                log.debug("[EMART]현재 페이지 : {}", i+1);
                 url = "https://emart24.co.kr/api1/store?page=" + i +
                         "&search=&AREA1=&AREA2=&SVR_24=&SVR_AUTO=&SVR_PARCEL=&SVR_ATM=&SVR_WINE=&SVR_COFFEE=&SVR_SMOOTH=&SVR_APPLE=&SVR_TOTO=";
                 // RestTemplate를 사용하여 외부 API 호출
@@ -121,11 +121,11 @@ public class EmartConvCrawling implements Crawling {
                         result.add(convInfo);
                         log.debug("[Emart] ConvName: {}, ConvAddr: {}, longitude: {}, latitude: {}", convName, convAddr, longitude, latitude);
                     } catch (JSONException ex) {
-                        log.info("{} 페이지 [{}]번째 편의점의 정보가 이상함: {}",i, z, ex.getMessage());
+                        log.info("[EMART]{} 페이지 [{}]번째 편의점의 정보가 이상함: {}",i, z, ex.getMessage());
                         wrongInfo +=1;
                         // continue가 필요 없습니다. 예외를 처리한 후 자동으로 다음 반복으로 넘어갑니다.
                     } catch (NumberFormatException ex) {
-                        log.info("{} 페이지 [{}]번째 편의점의 좌표값 형식이 잘못됨: {}",i, z, ex.getMessage());
+                        log.info("[EMART]{} 페이지 [{}]번째 편의점의 좌표값 형식이 잘못됨: {}",i, z, ex.getMessage());
                         wrongInfo +=1;
                         // NumberFormatException도 개별적으로 처리합니다.
                     }
@@ -139,7 +139,6 @@ public class EmartConvCrawling implements Crawling {
             log.error("[EMART]Selenium Error : NoSuchElementException\n ", e);
             log.error("시간 : {}", LocalDateTime.now());
             log.error("발생위치 : {}", e.getStackTrace());
-//                driver.quit();
             this.stopAllCrawling();
             crawlingStatus.stopCrawling("convenienceCrawling");
             throw new CustomException(ErrorList.CRAWLING_SELENIUM);
@@ -148,7 +147,6 @@ public class EmartConvCrawling implements Crawling {
             log.error("[EMART]Selenium Error : WebDriverException \n", e);
             log.error("시간 : {}", LocalDateTime.now());
             log.error("발생위치 : {}", e.getStackTrace());
-//                driver.quit();
             crawlingStatus.stopCrawling("convenienceCrawling");
             this.stopAllCrawling();
             throw new CustomException(ErrorList.CRAWLING_WEB_ELEMENT);
@@ -157,7 +155,6 @@ public class EmartConvCrawling implements Crawling {
             log.error("[EMART]에러 디테일 : ", e);
             log.error("시간 : {}", LocalDateTime.now());
             log.error("발생위치 : {}", e.getStackTrace());
-//                driver.quit();
             this.stopAllCrawling();
             crawlingStatus.stopCrawling("convenienceCrawling");
             throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);

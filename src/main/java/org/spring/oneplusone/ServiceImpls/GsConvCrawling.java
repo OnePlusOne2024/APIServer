@@ -127,7 +127,6 @@ public class GsConvCrawling implements Crawling {
             log.error("[GS25]Selenium Error : NoSuchElementException\n ", e);
             log.error("시간 : {}", LocalDateTime.now());
             log.error("발생위치 : {}",e.getStackTrace());
-//            driver.quit();
             this.stopAllCrawling();
             crawlingStatus.stopCrawling("convenienceCrawling");
             throw new CustomException(ErrorList.CRAWLING_SELENIUM);
@@ -135,7 +134,6 @@ public class GsConvCrawling implements Crawling {
             log.error("[GS25]Selenium Error : WebDriverException \n", e);
             log.error("시간 : {}", LocalDateTime.now());
             log.error("발생위치 : {}",e.getStackTrace());
-//            driver.quit();
             this.stopAllCrawling();
             crawlingStatus.stopCrawling("convenienceCrawling");
             throw new CustomException(ErrorList.CRAWLING_WEB_ELEMENT);
@@ -143,7 +141,6 @@ public class GsConvCrawling implements Crawling {
             log.error("[GS25]에러 디테일 : ", e);
             log.error("시간 : {}", LocalDateTime.now());
             log.error("발생위치 : {}",e.getStackTrace());
-//            driver.quit();
             this.stopAllCrawling();
             crawlingStatus.stopCrawling("convenienceCrawling");
             throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);
