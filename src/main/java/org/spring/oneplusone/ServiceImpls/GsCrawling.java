@@ -30,7 +30,7 @@ public class GsCrawling implements Crawling {
         this.crawlingStatus = crawlingStatus;
     }
     public List<ProductDTO> getEventProduct() {
-        log.debug("GS EVENT CRAWLING START");
+        log.info("GS EVENT CRAWLING START");
         //enum에 선언된 url을 통해 크롤링 시도
         WebDriver driver = startingSession(URL.GS_EVENT_URL.getUrl());//WebDriver 생성
         //GS 행사 페이지에서 전체 목록 가져오기
@@ -86,7 +86,6 @@ public class GsCrawling implements Crawling {
                     blockUI = driver.findElement(By.className("blockUI"));
                     wait.until(ExpectedConditions.stalenessOf(blockUI));
                 }
-                //gs : tlbwrap mt50 class
                 //9번째 태그가 전체 목록
                 allProductPageBlock = wait.until(ExpectedConditions.visibilityOfElementLocated(
                         By.xpath("//*[@id=\"wrap\"]/div[4]/div[2]/div[3]/div/div/div[4]")));

@@ -18,6 +18,8 @@ public enum ErrorList {
     CRAWLING_WEB_ELEMENT("CRAWLING--003", "WebElement가 존재하지 않음", false,HttpStatus.INTERNAL_SERVER_ERROR),
     CRAWLING_UNEXPECTED_ERROR("CRAWLING--004", "Crawling중 예기치 못한 에러 발생", false,HttpStatus.INTERNAL_SERVER_ERROR),
     JPA_UNEXPECTED_ERROR("JPA--001", "JPA로 DB에 저장하는 중 예기치 못한 에러가 발생했습니다.", false, HttpStatus.INTERNAL_SERVER_ERROR),
+    SEARCH_UNEXPECTED_ERROR("SEARCH--001", "SEARCH API DB 중에 예기치 못한 에러가 발생했습니다", false, HttpStatus.INTERNAL_SERVER_ERROR),
+    TOP_SEARCH_UNEXPECTED_ERROR("SEARCH--002", "SEARCH API DB 중에 예기치 못한 에러가 발생했습니다", false, HttpStatus.INTERNAL_SERVER_ERROR),
     GS_FRESH("GSFRESH--001", "GS-FRESH-CRAWLING-ERROR",false, HttpStatus.CONFLICT);
 
     private final String code;

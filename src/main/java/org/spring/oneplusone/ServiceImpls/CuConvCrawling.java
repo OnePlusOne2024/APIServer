@@ -31,6 +31,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.json.JSONObject;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j
@@ -112,7 +113,7 @@ public class CuConvCrawling implements Crawling {
                     log.info("[CU]현재 구,군 : {}", currentGuGunName);
                     waitForFinishCiteLoading(driver, wait, 0, 5);
                     //바뀐 동을 가져옴
-                    if(currentGuGunName == "세종특별자치시"){
+                    if(currentSiDoName.equals("세종특별자치시")){
                         dongOptions = new ArrayList<>(2);
                     }else {
                         dongWebElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("Dong")));
@@ -121,7 +122,7 @@ public class CuConvCrawling implements Crawling {
                     }
                     for (int dongCurrentOption = 1; dongCurrentOption < dongOptions.size(); dongCurrentOption++) {
                         //현재 동을 선택하고 기다림
-                        if(currentGuGunName != "세종특별자치시"){
+                        if(!currentSiDoName.equals("세종특별자치시")){
                             currentDongName = dongOptions.get(dongCurrentOption).getAttribute("value");
                             dongSelect.selectByValue(currentDongName);
                             log.info("[CU]현재 동 : {}", currentDongName);
@@ -143,34 +144,49 @@ public class CuConvCrawling implements Crawling {
                         if (!checkDataInTbody.getText().equals("등록된 게시물이 없습니다.")) {
                             convListTr = convTable.findElements(By.tagName("tr"));
                             for (int currentConv = 0; currentConv < convListTr.size(); currentConv++) {
-                                convInfoTd = convListTr.get(currentConv).findElements(By.tagName("td"));
-                                convName = convInfoTd.get(0).findElement(By.className("name")).getText();
-                                convAddrWebElement = convInfoTd.get(1).findElement(By.tagName("a"));
-                                convAddr = convAddrWebElement.getText();
-                                convAddrOnclick = convAddrWebElement.getAttribute("onclick");
-                                // 정규 표현식을 사용하여 주소 부분을 추출합니다.
-                                Pattern pattern = Pattern.compile("searchLatLng\\('([^']*)',");
-                                Matcher matcher = pattern.matcher(convAddrOnclick);
-                                if (matcher.find()) {
-                                    convAddrText = matcher.group(1); // 첫 번째 그룹에 해당하는 주소를 가져옵니다.
-                                } else {
-                                    convAddrText = "주소를 찾을 수 없습니다.";
-                                }
-                                //주소가 없을 경우 length = 0
-                                coordinate = waitForGetCoordinate(convAddrText);
-                                if (coordinate.size() != 0) {//사이즈가 0이면 다음으로 넘어감
-                                    longitude = coordinate.get(0);
-                                    latitude = coordinate.get(1);
-                                    convInfo = ConvDTO.builder()
-                                            .convAddr(convAddr)
-                                            .convBrandName(convBrandName)
-                                            .convName(convName)
-                                            .latitude(latitude)
-                                            .longitude(longitude)
-                                            .convBrandName(ConvName.CU)
-                                            .build();
-                                    log.debug("[CU]ConvName : {}, ConvAddr : {}, longitude : {}, latitude : {}", convName, convAddr, longitude, latitude);
-                                    result.add(convInfo);
+                                try{
+                                    convInfoTd = convListTr.get(currentConv).findElements(By.tagName("td"));
+                                    convName = convInfoTd.get(0).findElement(By.className("name")).getText();
+                                    convAddrWebElement = convInfoTd.get(1).findElement(By.tagName("a"));
+                                    convAddr = convAddrWebElement.getText();
+                                    convAddrOnclick = convAddrWebElement.getAttribute("onclick");
+                                    // 정규 표현식을 사용하여 주소 부분을 추출합니다.
+                                    Pattern pattern = Pattern.compile("searchLatLng\\('([^']*)',");
+                                    Matcher matcher = pattern.matcher(convAddrOnclick);
+                                    if (matcher.find()) {
+                                        convAddrText = matcher.group(1); // 첫 번째 그룹에 해당하는 주소를 가져옵니다.
+                                    } else {
+                                        convAddrText = "주소를 찾을 수 없습니다.";
+                                    }
+                                    //주소가 없을 경우 length = 0
+                                    coordinate = waitForGetCoordinate(convAddrText);
+                                    if (coordinate.size() != 0) {//사이즈가 0이면 다음으로 넘어감
+                                        longitude = coordinate.get(0);
+                                        latitude = coordinate.get(1);
+                                        convInfo = ConvDTO.builder()
+                                                .convAddr(convAddr)
+                                                .convBrandName(convBrandName)
+                                                .convName(convName)
+                                                .latitude(latitude)
+                                                .longitude(longitude)
+                                                .convBrandName(ConvName.CU)
+                                                .build();
+                                        log.debug("[CU]ConvName : {}, ConvAddr : {}, longitude : {}, latitude : {}", convName, convAddr, longitude, latitude);
+                                        result.add(convInfo);
+                                    }
+                                }catch (ResourceAccessException cunnection){
+                                    driver = startingSession(URL.CU_CONV_URL.getUrl());
+                                    guGunWebElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.name("Gugun")));
+                                    guGunSelect = new Select(guGunWebElement);
+                                    guGunOptions = guGunSelect.getOptions();
+                                    resultStore = wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("result_store")));
+                                    searchButton = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//input[@alt='검색']")));
+                                    dongWebElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("Dong")));
+                                    dongSelect = new Select(dongWebElement);
+                                    dongOptions = dongSelect.getOptions();
+                                    siDoWebElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.name("sido")));
+                                    siDoSelect = new Select(siDoWebElement);
+                                    siDoOptions = siDoSelect.getOptions();
                                 }
                             }
                         }

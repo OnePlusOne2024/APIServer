@@ -4,20 +4,28 @@ package org.spring.oneplusone.Service;
 import lombok.extern.slf4j.Slf4j;
 import org.spring.oneplusone.DTO.CrawlingResultDTO;
 import org.spring.oneplusone.DTO.ProductDTO;
+import org.spring.oneplusone.DTO.SearchDTO;
 import org.spring.oneplusone.Entity.CrawlingTimeEntity;
 import org.spring.oneplusone.Entity.ProductEntity;
 import org.spring.oneplusone.Entity.ProductId;
+import org.spring.oneplusone.Entity.SearchEntity;
 import org.spring.oneplusone.Repository.CrawlingTimeRepository;
 import org.spring.oneplusone.Repository.ProductRepository;
+import org.spring.oneplusone.Repository.SearchRepository;
 import org.spring.oneplusone.ServiceImpls.GsCrawling;
 import org.spring.oneplusone.Utils.Enums.ErrorList;
 import org.spring.oneplusone.Utils.Error.CustomException;
 import org.spring.oneplusone.Utils.Status.CrawlingStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,13 +35,20 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CrawlingTimeRepository crawlingTimeRepository;
     private final GsCrawling gsCrawling;
-    @Autowired
+    private final SearchRepository searchRepository;
     private CrawlingStatus crawlingStatus;
+    private TaskScheduler taskScheduler;
 
-    public ProductService(ProductRepository productRepository, CrawlingTimeRepository crawlingTimeRepository, GsCrawling gsCrawling) {
+    public ProductService(ProductRepository productRepository,
+                          CrawlingTimeRepository crawlingTimeRepository,
+                          SearchRepository searchRepository,
+                          TaskScheduler taskScheduler,
+                          GsCrawling gsCrawling) {
         this.productRepository = productRepository;
         this.crawlingTimeRepository = crawlingTimeRepository;
         this.gsCrawling = gsCrawling;
+        this.searchRepository = searchRepository;
+        this.taskScheduler = taskScheduler;
     }
 
     public List<ProductDTO> findAllProducts() {
@@ -91,6 +106,46 @@ public class ProductService {
         log.info("서버 시간 : " + latestCrawlingTime);
         return clientTime.isAfter(latestCrawlingTime);//LocalDateTime이 인자보다 이후인가
     }
+    public void updateTopSearched(String productName){
+        SearchEntity searchKeyword = searchRepository.findByProductName(productName);
+        if (searchKeyword != null) {
+            searchKeyword.incrementSearchCount();
+            searchRepository.save(searchKeyword);
+            scheduleDeletionOrDecrement(searchKeyword);
+        } else {
+            searchKeyword = SearchEntity.builder()
+                    .productName(productName)
+                    .id(UUID.randomUUID().toString())
+                    .searchCount(1)
+                    .build();
+            searchRepository.save(searchKeyword);
+            scheduleDeletionOrDecrement(searchKeyword);
+        }
+    }
+    public List<SearchDTO> andFind(){
+        //정렬해서 받기
+        List<SearchEntity> listSearch = searchRepository.findAll(Sort.by(Sort.Direction.DESC, "searchCount"));
+        List<SearchDTO> result = new ArrayList<>();
+        SearchDTO one;
+        if(listSearch.size() < 10){
+            for (int i = 0; i < listSearch.size(); i++) {
+                one = SearchDTO.builder()
+                        .productName(listSearch.get(i).getProductName())
+                        .build();
+                result.add(one);
+            }
+        }else
+        {
+            for (int i = 0; i < 10; i++) {
+                one = SearchDTO.builder()
+                        .productName(listSearch.get(i).getProductName())
+                        .build();
+                result.add(one);
+            }
+        }
+        return result;
+    }
+
     private ProductDTO productEntityToProductDTO(ProductEntity productEntity) {
         return ProductDTO.builder()
                 .name(productEntity.getPid().getName())
@@ -112,5 +167,19 @@ public class ProductService {
                 .category(productDTO.getCategory())
                 .image(productDTO.getImage())
                 .build();
+    }
+    private void scheduleDeletionOrDecrement(SearchEntity keyword) {
+        Runnable task = () -> {
+            if (keyword != null) {
+                if (keyword.getSearchCount() > 1) {
+                    keyword.decrementSearchCount();
+                    searchRepository.save(keyword);
+                } else {
+                    searchRepository.delete(keyword);
+                }
+            }
+        };
+        // 24시간 후에 작업을 스케줄합니다.
+        taskScheduler.schedule(task, new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000));
     }
 }

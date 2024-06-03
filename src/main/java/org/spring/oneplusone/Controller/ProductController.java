@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
+import org.spring.oneplusone.DTO.SearchDTO;
 import org.spring.oneplusone.Service.ConvService;
 import org.spring.oneplusone.Utils.Enums.ErrorList;
 import org.spring.oneplusone.Utils.Error.CustomException;
@@ -186,5 +187,31 @@ public class ProductController {
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+    @PostMapping("/search")
+    public ResponseEntity<?> updateSearch(
+            @Parameter(description = "현재 시간 값", example="2024-05-23T15:30:45")
+            @RequestParam String productName
+    ) throws CustomException{
+        log.info("Search Update API Start");
+        try{
+            productService.updateTopSearched(productName);
+            String result = "update complete";
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        }catch(Exception ex){
+            log.error("Error 내용 : {}",ex);
+            throw new CustomException(ErrorList.SEARCH_UNEXPECTED_ERROR);
+        }
+    }
 
+    @GetMapping("/topSearched")
+    public ResponseEntity<?> findSearch() throws CustomException{
+        log.info("Top Searched API Start");
+        try{
+            List<SearchDTO> result = productService.andFind();
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        }catch(Exception ex){
+            log.error("Error 내용 : {}",ex);
+            throw new CustomException(ErrorList.TOP_SEARCH_UNEXPECTED_ERROR);
+        }
+    }
 }
