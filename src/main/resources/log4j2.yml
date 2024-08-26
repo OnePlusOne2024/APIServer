@@ -95,7 +95,7 @@ Configutation:
       ##배포시에 사용
       - name: org.spring.oneplusone
         additivity: "false" #중복 로깅 여부
-        level: INFO #debug 시에는 debug까지 전부 나오게
+        level: DEBUG #debug 시에는 debug까지 전부 나오게
         AppenderRef:
           - ref: console-appender
           - ref: rolling-file-appender

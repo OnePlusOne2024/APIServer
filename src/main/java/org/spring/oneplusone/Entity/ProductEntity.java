@@ -17,6 +17,7 @@ public class ProductEntity {
     @Column(nullable = false)
     private Boolean pb;
     @Column(length = 6, nullable = false)
+    //1+1,덤증정,2+1,할인
     private String event;
     @Column(length = 10, nullable = false)
     private String category;

@@ -5,18 +5,23 @@ import lombok.extern.slf4j.Slf4j;
 import org.spring.oneplusone.DTO.CrawlingResultDTO;
 import org.spring.oneplusone.DTO.ProductDTO;
 import org.spring.oneplusone.DTO.SearchDTO;
-import org.spring.oneplusone.Entity.CrawlingTimeEntity;
-import org.spring.oneplusone.Entity.ProductEntity;
-import org.spring.oneplusone.Entity.ProductId;
-import org.spring.oneplusone.Entity.SearchEntity;
+import org.spring.oneplusone.Entity.*;
 import org.spring.oneplusone.Repository.CrawlingTimeRepository;
 import org.spring.oneplusone.Repository.ProductRepository;
 import org.spring.oneplusone.Repository.SearchRepository;
-import org.spring.oneplusone.ServiceImpls.GsCrawling;
+import org.spring.oneplusone.ServiceImpls.Product.CU.CuEventCrawling;
+import org.spring.oneplusone.ServiceImpls.Product.CU.CuPbCrawling;
+import org.spring.oneplusone.ServiceImpls.Product.Emart.EmartEventCrawling;
+import org.spring.oneplusone.ServiceImpls.Product.Emart.EmartPbCrawling;
+import org.spring.oneplusone.ServiceImpls.Product.GS25.GsEventCrawling;
+import org.spring.oneplusone.ServiceImpls.Product.GS25.GsFreshPbCrawling;
+import org.spring.oneplusone.ServiceImpls.Product.GS25.GsNonFreshPbCrawling;
+import org.spring.oneplusone.ServiceImpls.Product.SevenEleven.SevenEventCrawling;
+import org.spring.oneplusone.ServiceImpls.Product.SevenEleven.SevenPbCrawling;
 import org.spring.oneplusone.Utils.Enums.ErrorList;
 import org.spring.oneplusone.Utils.Error.CustomException;
 import org.spring.oneplusone.Utils.Status.CrawlingStatus;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
@@ -26,6 +31,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -34,7 +43,15 @@ public class ProductService {
     //Dependency Injection을 위해 생성자를 주입
     private final ProductRepository productRepository;
     private final CrawlingTimeRepository crawlingTimeRepository;
-    private final GsCrawling gsCrawling;
+    private final GsEventCrawling gsEventCrawling;
+    private final GsFreshPbCrawling gsFreshPbCrawling;
+    private final GsNonFreshPbCrawling gsNonFreshPbCrawling;
+    private final SevenEventCrawling sevenEventCrawling;
+    private final SevenPbCrawling sevenPbCrawling;
+    private final CuEventCrawling cuEventCrawling;
+    private final CuPbCrawling cuPbCrawling;
+    private final EmartEventCrawling emartEventCrawling;
+    private final EmartPbCrawling emartPbCrawling;
     private final SearchRepository searchRepository;
     private CrawlingStatus crawlingStatus;
     private TaskScheduler taskScheduler;
@@ -42,13 +59,29 @@ public class ProductService {
     public ProductService(ProductRepository productRepository,
                           CrawlingTimeRepository crawlingTimeRepository,
                           SearchRepository searchRepository,
-                          TaskScheduler taskScheduler,
-                          GsCrawling gsCrawling) {
+                          @Qualifier("taskScheduler") TaskScheduler taskScheduler,
+                          SevenEventCrawling sevenEventCrawling,
+                          SevenPbCrawling sevenPbCrawling,
+                          CuEventCrawling cuEventCrawling,
+                          CuPbCrawling cuPbCrawling,
+                          EmartEventCrawling emartEventCrawling,
+                          EmartPbCrawling emartPbCrawling,
+                          GsFreshPbCrawling gsFreshPbCrawling,
+                          GsNonFreshPbCrawling gsNonFreshPbCrawling,
+                          GsEventCrawling gsEventCrawling) {
         this.productRepository = productRepository;
         this.crawlingTimeRepository = crawlingTimeRepository;
-        this.gsCrawling = gsCrawling;
+        this.gsEventCrawling = gsEventCrawling;
+        this.gsFreshPbCrawling = gsFreshPbCrawling;
+        this.gsNonFreshPbCrawling = gsNonFreshPbCrawling;
         this.searchRepository = searchRepository;
         this.taskScheduler = taskScheduler;
+        this.sevenEventCrawling = sevenEventCrawling;
+        this.sevenPbCrawling = sevenPbCrawling;
+        this.cuEventCrawling = cuEventCrawling;
+        this.cuPbCrawling = cuPbCrawling;
+        this.emartEventCrawling = emartEventCrawling;
+        this.emartPbCrawling = emartPbCrawling;
     }
 
     public List<ProductDTO> findAllProducts() {
@@ -61,6 +94,7 @@ public class ProductService {
         log.debug("SERVICE FINISH");
         return resultWithinDTO;
     }
+
     public CrawlingResultDTO productCrawling() {
         log.debug("SERVICE START");
         //현재 진행중인 crawling이 있는지 확인하기
@@ -78,35 +112,136 @@ public class ProductService {
         List<ProductDTO> crawlingList;
         List<ProductEntity> resultToEntity;
         ProductEntity productEntity;
-        //GS크롤링 Object 생성
-        crawlingList = gsCrawling.getEventProduct();
-        //SEVENELEVEN크롤링
-        //멀티 쓰레드 추가?
+        // futures: 크롤링 결과가 담긴 List<CompletableFuture<List<ConvDTO>>>들의 List
+        ExecutorService executor = Executors.newFixedThreadPool(10);
+        CompletableFuture<List<ProductDTO>> gsEventProdList = CompletableFuture.supplyAsync(() -> gsEventCrawling.getProductList(), executor)
+                .exceptionally(ex -> {
+                    log.error("GS EVENT 크롤링 중 에러 발생(ProdService 처리) : {}", ex);
+                    log.error("발생위치 : {}", ex.getStackTrace());
+                    throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);
+                });
+        CompletableFuture<List<ProductDTO>> gsFreshPbProdList = CompletableFuture.supplyAsync(() -> gsFreshPbCrawling.getProductList(), executor)
+                .exceptionally(ex -> {
+                    log.error("GS FRESH PB 크롤링 중 에러 발생(ProdService 처리) : {}", ex);
+                    log.error("발생위치 : {}", ex.getStackTrace());
+                    throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);
+                });
+        CompletableFuture<List<ProductDTO>> gsNonFreshPbProdList = CompletableFuture.supplyAsync(() -> gsNonFreshPbCrawling.getProductList(), executor)
+                .exceptionally(ex -> {
+                    log.error("GS NON FRESH PB 크롤링 중 에러 발생(ProdService 처리) : {}", ex);
+                    log.error("발생위치 : {}", ex.getStackTrace());
+                    throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);
+                });
+        //Seven Eleven EVENT
+        CompletableFuture<List<ProductDTO>> sevenEventProdList = CompletableFuture.supplyAsync(() -> sevenEventCrawling.getProductList(), executor)
+                .exceptionally(ex -> {
+                    log.error("Seven Eleven EVENT 크롤링 중 에러 발생(ProdService 처리) : {}", ex);
+                    log.error("발생위치 : {}", ex.getStackTrace());
+                    throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);
+                });
+        //Seven Eleven PB
+        CompletableFuture<List<ProductDTO>> sevenPbProdList = CompletableFuture.supplyAsync(() -> sevenPbCrawling.getProductList(), executor)
+                .exceptionally(ex -> {
+                    log.error("Seven Eleven PB 크롤링 중 에러 발생(ProdService 처리) : {}", ex);
+                    log.error("발생위치 : {}", ex.getStackTrace());
+                    throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);
+                });
+        //CU EVENT
+        CompletableFuture<List<ProductDTO>> cuEventProdList = CompletableFuture.supplyAsync(() -> cuEventCrawling.getProductList(), executor)
+                .exceptionally(ex -> {
+                    log.error("CU EVENT 크롤링 중 에러 발생(ProdService 처리) : {}", ex);
+                    log.error("발생위치 : {}", ex.getStackTrace());
+                    throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);
+                });
+        //CU PB
+        CompletableFuture<List<ProductDTO>> cuPbProdList = CompletableFuture.supplyAsync(() -> cuPbCrawling.getProductList(), executor)
+                .exceptionally(ex -> {
+                    log.error("CU PB 크롤링 중 에러 발생(ProdService 처리) : {}", ex);
+                    log.error("발생위치 : {}", ex.getStackTrace());
+                    throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);
+                });
+        //EMART EVENT
+        CompletableFuture<List<ProductDTO>> emartEventProdList = CompletableFuture.supplyAsync(() -> emartEventCrawling.getProductList(), executor)
+                .exceptionally(ex -> {
+                    log.error("EMART EVENT 크롤링 중 에러 발생(ProdService 처리) : {}", ex);
+                    log.error("발생위치 : {}", ex.getStackTrace());
+                    throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);
+                });
+        //EMART PB
+        CompletableFuture<List<ProductDTO>> emartPbProdList = CompletableFuture.supplyAsync(() -> emartPbCrawling.getProductList(), executor)
+                .exceptionally(ex -> {
+                    log.error("EMART PB 크롤링 중 에러 발생(ProdService 처리) : {}", ex);
+                    log.error("발생위치 : {}", ex.getStackTrace());
+                    throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);
+                });
+        // allFutures: futures들의 작업이 끝난 것을 합친 CompletableFuture
+        CompletableFuture<Void> allFutures = CompletableFuture.allOf(
+                        gsEventProdList,
+                        gsFreshPbProdList,
+                        gsNonFreshPbProdList,
+                        sevenEventProdList,
+                        sevenPbProdList,
+                        cuEventProdList,
+                        cuPbProdList,
+                        emartEventProdList,
+                        emartPbProdList
+                )
+                .exceptionally(ex -> {
+                    // CompletableFuture.allOf 자체에서 발생한 예외 처리
+                    log.error("CompletableFuture.allOf 중 예외 발생: {}", ex.getMessage());
+                    throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR); // 적절한 예외 처리 필요
+                });
+        // allConvDTOListFutures: 모든 futures의 결과를 하나의 리스트로 수집하는 CompletableFuture
+        CompletableFuture<List<ProductDTO>> allProductResultDTOListFutures = allFutures.thenApply(v -> {
+            List<ProductDTO> combinedList = new ArrayList<>();
+            try {
+                combinedList.addAll(gsEventProdList.join()); // join()을 사용하여 예외를 unchecked 형태로 받음
+                combinedList.addAll(gsFreshPbProdList.join());
+                combinedList.addAll(gsNonFreshPbProdList.join());
+                combinedList.addAll(sevenEventProdList.join());
+                combinedList.addAll(sevenPbProdList.join());
+                combinedList.addAll(cuEventProdList.join());
+                combinedList.addAll(cuPbProdList.join());
+                combinedList.addAll(emartEventProdList.join());
+                combinedList.addAll(emartPbProdList.join());
+            } catch (CompletionException e) {
+                throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);
+            }
+            return combinedList;
+        }).exceptionally(ex -> {
+            // CompletableFuture 체인의 어느 부분에서든 예외가 발생하면 여기서 처리
+            throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);
+        });
         log.debug("ALL CRAWLING FINISH");
         log.debug("CREATE DATA ON DATABASE");
         //AI로 카테고리 분류
         //dto -> entity
-        resultToEntity = crawlingList.stream().map(this::productDTOToProductEntity).collect(Collectors.toList());
-        //crawling후에 DB에 등록
-        try {
-            productRepository.saveAll(resultToEntity);
-        }catch(Exception ex){
-            log.error("에러 발생 : {}", ex.getMessage());
-            crawlingStatus.stopCrawling("productCrawling");
-            throw new CustomException(ErrorList.JPA_UNEXPECTED_ERROR);
-        }
-        //결과 return
-        //나중에 spring bean에서 가져오는 걸로 수정
-        CrawlingResultDTO crawlingResult = CrawlingResultDTO.builder().resultCount(resultToEntity.size()).build();
-        log.debug("SERVICE FINISH");
-        return crawlingResult;
+        // 결과를 처리하고 저장하는 CompletableFuture
+        CompletableFuture<CrawlingResultDTO> resultFuture = allProductResultDTOListFutures.thenApply(allConvDTOList -> {
+            log.info("편의점의 총 갯수: {}", allConvDTOList.size());
+            List<ProductEntity> productInputData = allConvDTOList.stream()
+                    .map(this::productDTOToProductEntity)
+                    .collect(Collectors.toList());
+            try {
+                productRepository.saveAll(productInputData);
+                log.debug("SERVICE FINISH");
+                return CrawlingResultDTO.builder().resultCount(allConvDTOList.size()).build();
+            } catch (Exception ex) {
+                log.error("에러 발생 : {}", ex.getMessage());
+                crawlingStatus.stopCrawling("productCrawling");
+                throw new CustomException(ErrorList.JPA_UNEXPECTED_ERROR);
+            }
+        });
+        return resultFuture.join();
     }
+
     public boolean checkClientNeedToUpdateProductData(LocalDateTime clientTime) {
         LocalDateTime latestCrawlingTime = crawlingTimeRepository.findById(1L).get().getLatestCrawlingTime();
         log.info("서버 시간 : " + latestCrawlingTime);
         return clientTime.isAfter(latestCrawlingTime);//LocalDateTime이 인자보다 이후인가
     }
-    public void updateTopSearched(String productName){
+
+    public void updateTopSearched(String productName) {
         SearchEntity searchKeyword = searchRepository.findByProductName(productName);
         if (searchKeyword != null) {
             searchKeyword.incrementSearchCount();
@@ -122,20 +257,20 @@ public class ProductService {
             scheduleDeletionOrDecrement(searchKeyword);
         }
     }
-    public List<SearchDTO> andFind(){
+
+    public List<SearchDTO> andFind() {
         //정렬해서 받기
         List<SearchEntity> listSearch = searchRepository.findAll(Sort.by(Sort.Direction.DESC, "searchCount"));
         List<SearchDTO> result = new ArrayList<>();
         SearchDTO one;
-        if(listSearch.size() < 10){
+        if (listSearch.size() < 10) {
             for (int i = 0; i < listSearch.size(); i++) {
                 one = SearchDTO.builder()
                         .productName(listSearch.get(i).getProductName())
                         .build();
                 result.add(one);
             }
-        }else
-        {
+        } else {
             for (int i = 0; i < 10; i++) {
                 one = SearchDTO.builder()
                         .productName(listSearch.get(i).getProductName())
@@ -168,6 +303,7 @@ public class ProductService {
                 .image(productDTO.getImage())
                 .build();
     }
+
     private void scheduleDeletionOrDecrement(SearchEntity keyword) {
         Runnable task = () -> {
             if (keyword != null) {
