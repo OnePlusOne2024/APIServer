@@ -9,6 +9,16 @@ public enum URL {
     GS_EVENT_URL("http://gs25.gsretail.com/gscvs/ko/products/event-goods"),
     GS_PB_FRESH_URL("http://gs25.gsretail.com/gscvs/ko/products/youus-freshfood"),
     GS_PB_NOT_FRESH_URL("http://gs25.gsretail.com/gscvs/ko/products/youus-different-service"),
+    //Emart
+    EMART_EVENT_URL("https://emart24.co.kr/goods/event"),
+    EMART_PB_URL("https://emart24.co.kr/goods/pl"),
+    //CU
+    CU_PB_URL("https://cu.bgfretail.com/product/pb.do?category=product&depth2=1&sf=N"),
+    CU_EVENT_URL("https://cu.bgfretail.com/event/plus.do?category=event&depth2=1&sf=N"),
+    //SevenEleven
+    SEVEN_ELEVEN_EVENT_URL("https://www.7-eleven.co.kr/product/presentList.asp"),
+    SEVEN_ELEVEN_PB_URL("https://www.7-eleven.co.kr/product/7prodList.asp"),
+    //편의점 리스트
     GS_CONV_URL("http://gs25.gsretail.com/gscvs/ko/store-services/locations#;"),
     CU_CONV_URL("https://cu.bgfretail.com/store/list.do?category=store"),
     SEVEN_ELEVEN_CONV_LIST("http://www.7-eleven.co.kr/"),

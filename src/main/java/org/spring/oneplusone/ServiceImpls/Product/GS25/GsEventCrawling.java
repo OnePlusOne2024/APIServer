@@ -1,4 +1,4 @@
-package org.spring.oneplusone.ServiceImpls;
+package org.spring.oneplusone.ServiceImpls.Product.GS25;
 
 
 import lombok.extern.slf4j.Slf4j;
@@ -7,12 +7,13 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
 import org.spring.oneplusone.DTO.ProductDTO;
+import org.spring.oneplusone.ServiceImpls.Crawling;
+import org.spring.oneplusone.Utils.Enums.Category;
 import org.spring.oneplusone.Utils.Enums.ConvName;
 import org.spring.oneplusone.Utils.Enums.ErrorList;
 import org.spring.oneplusone.Utils.Enums.URL;
 import org.spring.oneplusone.Utils.Error.CustomException;
 import org.spring.oneplusone.Utils.Status.CrawlingStatus;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -22,14 +23,14 @@ import java.util.NoSuchElementException;
 
 @Slf4j
 @Component
-public class GsCrawling implements Crawling {
+public class GsEventCrawling implements Crawling {
 
     private CrawlingStatus crawlingStatus;
 
-    public GsCrawling(CrawlingStatus crawlingStatus){
+    public GsEventCrawling(CrawlingStatus crawlingStatus){
         this.crawlingStatus = crawlingStatus;
     }
-    public List<ProductDTO> getEventProduct() {
+    public List<ProductDTO> getProductList() {
         log.info("GS EVENT CRAWLING START");
         //enum에 선언된 url을 통해 크롤링 시도
         WebDriver driver = startingSession(URL.GS_EVENT_URL.getUrl());//WebDriver 생성
@@ -39,7 +40,7 @@ public class GsCrawling implements Crawling {
             Wait<WebDriver> wait = new FluentWait<>(driver)//FluentWait는 유연한 시간 설정이 가능
                     .withTimeout(Duration.ofSeconds(40))//40초까지 기다림
                     .pollingEvery(Duration.ofMillis(1))//5초마다 재확인
-                    .ignoring(NoSuchElementException.class);//Selenium 자체 에러 중 하나
+                    .ignoring(org.openqa.selenium.NoSuchElementException.class);//Selenium 자체 에러 중 하나
             WebElement productAllButton = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("TOTAL")));
             log.info("productAllButton 찾음 : " + productAllButton.getText());//로그로 수정
             productAllButton.click();//찾은 요소 클릭
@@ -97,7 +98,7 @@ public class GsCrawling implements Crawling {
                     int productPrice = Integer.parseInt(product.findElement(By.className("cost")).getText().replace("원", "").replace(",", ""));
                     Boolean productPB = Boolean.FALSE;          //일단 pb false로 해놓고, 나중에 pb상품에서 수정
                     String productEvent = product.findElement(By.className("flg01")).findElement(By.tagName("span")).getText();
-                    String category = "미정";
+                    String category = Category.NOT_FOUND.getCategoryName();
                     String productImg = product.findElement(By.tagName("img")).getAttribute("src");
                     currentProductInfo = ProductDTO.builder()
                             .name(productName)
@@ -108,6 +109,7 @@ public class GsCrawling implements Crawling {
                             .category(category)
                             .image(productImg)
                             .build();
+                    log.debug("[GS25][EVENT]상품명 : {}, 가격 : {}, 행사 종류 : {}, ", productName, productPrice, productEvent);
                     crawlingResult.add(currentProductInfo);
                 }
             }
@@ -115,26 +117,26 @@ public class GsCrawling implements Crawling {
             log.info("GS EVENT CRAWLING FINISH");
             driver.quit();
             return crawlingResult;
-        }catch (NoSuchElementException e) {
-            driver.quit();
+        }catch (org.openqa.selenium.NoSuchElementException e) {
             crawlingStatus.stopCrawling("productCrawling");
             // Selenium의 NoSuchElementException을 커스텀 예외로 변환하여 throw
             log.error("Selenium Error : NoSuchElementException");
             log.error(e.getMessage());
+            this.stopAllCrawling();
             throw new CustomException(ErrorList.CRAWLING_SELENIUM);
         } catch (WebDriverException e) {
-            driver.quit();
             crawlingStatus.stopCrawling("productCrawling");
             log.error("Selenium Error : WebDriverException");
             log.error(e.getMessage());
+            this.stopAllCrawling();
             // Selenium의 일반적인 WebDriverException을 커스텀 예외로 변환하여 throw
             throw new CustomException(ErrorList.CRAWLING_WEB_ELEMENT);
         }
         catch (Exception e) {
-            driver.quit();
             crawlingStatus.stopCrawling("productCrawling");
             // 일반적인 예외 처리
             log.error(e.getMessage());
+            this.stopAllCrawling();
             throw new CustomException(ErrorList.CRAWLING_UNEXPECTED_ERROR);
         }
     }

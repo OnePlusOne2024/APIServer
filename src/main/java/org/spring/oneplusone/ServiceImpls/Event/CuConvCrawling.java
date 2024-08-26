@@ -1,4 +1,4 @@
-package org.spring.oneplusone.ServiceImpls;
+package org.spring.oneplusone.ServiceImpls.Event;
 
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
@@ -11,6 +11,7 @@ import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.Wait;
 import org.spring.oneplusone.DTO.ConvDTO;
+import org.spring.oneplusone.ServiceImpls.Crawling;
 import org.spring.oneplusone.Utils.Enums.ConvName;
 import org.spring.oneplusone.Utils.Enums.ErrorList;
 import org.spring.oneplusone.Utils.Enums.URL;
@@ -196,7 +197,6 @@ public class CuConvCrawling implements Crawling {
             }
 
             log.info("CU 편의점 크롤링 종료 ");
-            log.info("[CU]갯수 : {}", result.size());
             driver.quit();
             return result;
         } catch (
